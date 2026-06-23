@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>AI Firewall</title>
+  <style>
+    :root {
+      --bg: #030305;
+      --surface: #08080E;
+      --elevated: #0F0F18;
+      --hover: #161622;
+      --active: #1E1E2E;
+      --border: #2A2A40;
+      --border-subtle: #141420;
+      --text: #FFFFFF;
+      --text-secondary: #A8A8C0;
+      --muted: #686880;
+      --accent: #00F5FF;
+      --accent-hover: #00D4E0;
+      --accent2: #FF006E;
+      --accent3: #BF00FF;
+      --green: #00FF88;
+      --red: #FF0040;
+      --yellow: #FFEA00;
+      --purple: #BF00FF;
+      --rose: #FF2070;
+      --brand-gradient: linear-gradient(135deg, #FF006E 0%, #7B2FFF 45%, #00F5FF 100%);
+      --accent-subtle: rgba(0, 245, 255, 0.12);
+      --indigo-subtle: rgba(123, 47, 255, 0.18);
+      --violet-subtle: rgba(255, 0, 110, 0.14);
+      --cyan-subtle: rgba(0, 245, 255, 0.14);
+      --green-subtle: rgba(0, 255, 136, 0.16);
+      --red-subtle: rgba(255, 0, 64, 0.18);
+      --yellow-subtle: rgba(255, 234, 0, 0.14);
+      --glow-cyan: rgba(0, 245, 255, 0.28);
+      --glow-magenta: rgba(255, 0, 110, 0.24);
+      --glow-purple: rgba(123, 47, 255, 0.22);
+      --sidebar-w: 252px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh; display: flex;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background:
+        radial-gradient(ellipse 55% 45% at 0% -10%, var(--glow-magenta), transparent 55%),
+        radial-gradient(ellipse 50% 42% at 100% 110%, var(--glow-cyan), transparent 52%),
+        radial-gradient(ellipse 35% 30% at 70% 8%, var(--glow-purple), transparent 48%);
+    }
+    /* Sidebar */
+    .sidebar {
+      width: var(--sidebar-w); min-height: 100vh;
+      background: linear-gradient(180deg, #0A0A14 0%, #030305 100%);
+      border-right: 1px solid var(--border);
+      box-shadow: 4px 0 24px rgba(255, 0, 110, 0.06); display: flex; flex-direction: column;
+      position: fixed; left: 0; top: 0; bottom: 0; z-index: 10;
+    }
+    .brand { padding: 1.75rem 1.25rem 1.5rem; display: flex; align-items: center; gap: 0.85rem; }
+    .brand-icon {
+      width: 42px; height: 42px; border-radius: 12px; padding: 2px;
+      background: var(--brand-gradient);
+    }
+    .brand-icon-inner {
+      width: 100%; height: 100%; border-radius: 10px; background: var(--surface);
+      display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+    }
+    .brand-title { font-size: 1.15rem; font-weight: 700; }
+    .brand-sub { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.02em; }
+    .nav-section { padding: 0 0.75rem; margin-bottom: 0.5rem; }
+    .nav-label {
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em;
+      color: var(--muted); padding: 0.5rem 0.75rem 0.35rem;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0.85rem;
+      margin: 0.15rem 0; border-radius: 10px; cursor: pointer; color: var(--muted);
+      font-size: 0.875rem; border: none; background: none; width: 100%; text-align: left;
+      transition: background 0.15s, color 0.15s;
+    }
+    .nav-item:hover { background: var(--hover); color: var(--text); }
+    .nav-item.active {
+      background: var(--cyan-subtle); color: var(--accent); font-weight: 700;
+      box-shadow: inset 3px 0 0 var(--accent), 0 0 20px var(--glow-cyan);
+    }
+    .nav-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .icon { width: 1.1em; height: 1.1em; stroke: currentColor; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+    .icon-fill { fill: currentColor; stroke: none; }
+    .icon-lg { width: 1.75rem; height: 1.75rem; }
+    .icon-xl { width: 2.5rem; height: 2.5rem; }
+    .brand-icon-inner .icon { width: 1.25rem; height: 1.25rem; color: var(--accent); }
+    .sidebar-footer {
+      margin-top: auto; padding: 1rem 1.25rem 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+    .health-pill {
+      background: var(--elevated); border: 1px solid var(--border);
+      border-radius: 10px; padding: 0.75rem; font-size: 0.8rem;
+    }
+    .health-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; }
+    /* Main */
+    .main { margin-left: var(--sidebar-w); flex: 1; min-height: 100vh; position: relative; z-index: 1; }
+    .main::before {
+      content: ''; position: fixed; width: 520px; height: 520px; top: -200px; right: 8%;
+      background: radial-gradient(circle, var(--glow-magenta), transparent 65%);
+      pointer-events: none;
+    }
+    .topbar {
+      padding: 1.25rem 2rem; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(8, 8, 14, 0.88); backdrop-filter: blur(16px) saturate(1.4);
+      border-bottom-color: rgba(0, 245, 255, 0.15);
+      position: sticky; top: 0; z-index: 5;
+    }
+    .topbar h1 { font-size: 1.35rem; font-weight: 600; }
+    .topbar p { font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.2rem; }
+    .status-badge { padding: 0.35rem 1rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600; }
+    .status-active { background: var(--green-subtle); color: var(--green); border: 1px solid rgba(0, 255, 136, 0.45); box-shadow: 0 0 12px rgba(0, 255, 136, 0.2); }
+    .status-inactive { background: var(--red-subtle); color: var(--red); border: 1px solid rgba(255, 0, 64, 0.45); box-shadow: 0 0 12px rgba(255, 0, 64, 0.2); }
+    .content { padding: 2rem; max-width: 1200px; margin: 0 auto; width: 100%; }
+    .page { display: none; animation: fadeIn 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
+    .page.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Topbar actions */
+    .topbar-actions { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+    .last-updated { font-size: 0.72rem; color: var(--muted); }
+    .btn-icon {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+      width: auto; min-width: 2.25rem; height: 2.25rem; padding: 0 0.65rem;
+      border-radius: 10px; border: 1px solid var(--border); background: var(--elevated);
+      color: var(--text-secondary); cursor: pointer; transition: all 0.15s;
+    }
+    .btn-icon:hover { border-color: var(--accent); color: var(--text); background: var(--hover); }
+    .btn-icon .icon.spin { animation: spin 0.8s linear infinite; }
+    .status-badge { display: inline-flex; align-items: center; gap: 0.45rem; }
+    .status-badge::before {
+      content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor;
+    }
+    .status-active::before { animation: pulse 2s ease infinite; }
+
+    /* Section headers */
+    .section-header { margin-bottom: 1rem; }
+    .section-header h2 { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.25rem; }
+    .section-header p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; }
+
+    /* Clickable stat cards */
+    .stat-card { cursor: pointer; transition: transform 0.15s, border-color 0.2s, box-shadow 0.2s; }
+    .stat-card:hover {
+      transform: translateY(-2px); border-color: rgba(0, 245, 255, 0.55);
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35), 0 0 28px var(--glow-cyan);
+    }
+    .stat-card .stat-hint { font-size: 0.7rem; color: var(--muted); margin-top: 0.5rem; opacity: 0; transition: opacity 0.15s; }
+    .stat-card:hover .stat-hint { opacity: 1; }
+
+    /* Action panels */
+    .action-panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .action-panel {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.15rem 1.25rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .action-panel:hover { border-color: rgba(123, 47, 255, 0.35); box-shadow: 0 0 20px var(--glow-purple); }
+    .action-panel-title {
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 0.75rem;
+    }
+    .action-panel .actions-bar { margin-bottom: 0; }
+
+    /* Buttons */
+    .btn:focus-visible, .nav-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .btn-sm { padding: 0.35rem 0.75rem; font-size: 0.78rem; border-radius: 8px; }
+    .btn-success { border-color: rgba(0, 255, 136, 0.45); color: var(--green); background: var(--green-subtle); }
+    .btn-success:hover { border-color: var(--green); box-shadow: 0 0 14px rgba(0, 255, 136, 0.25); }
+    .btn-group { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+
+    /* Tables */
+    .table-wrap { overflow: hidden; border-radius: 14px; }
+    .table-wrap .card { padding: 0; overflow: hidden; }
+    .table-wrap table thead th {
+      position: sticky; top: 0; background: var(--elevated); z-index: 1;
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .table-wrap tbody tr { transition: background 0.12s; }
+    .table-wrap tbody tr:hover { background: var(--hover); }
+
+    /* Empty states */
+    .empty-state { padding: 3rem 1.5rem; text-align: center; }
+    .empty-state .empty-icon {
+      width: 3rem; height: 3rem; margin: 0 auto 1rem; color: var(--accent); opacity: 0.6;
+    }
+    .empty-state h3 { font-size: 1rem; margin-bottom: 0.35rem; color: var(--text); }
+    .empty-state p { font-size: 0.85rem; color: var(--muted); max-width: 320px; margin: 0 auto 1rem; line-height: 1.5; }
+
+    /* Policy segmented control */
+    .policy-row { margin-bottom: 1.25rem; }
+    .policy-row:last-child { margin-bottom: 0; }
+    .policy-label { font-size: 0.9rem; font-weight: 500; margin-bottom: 0.15rem; }
+    .policy-desc { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.65rem; }
+    .segmented {
+      display: inline-flex; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 3px; gap: 2px;
+    }
+    .segmented button {
+      border: none; background: transparent; color: var(--muted); padding: 0.45rem 1rem;
+      border-radius: 8px; font-size: 0.82rem; font-weight: 500; cursor: pointer; transition: all 0.15s;
+    }
+    .segmented button:hover { color: var(--text); }
+    .segmented button.active { background: var(--elevated); color: var(--accent); box-shadow: 0 0 12px var(--glow-cyan); }
+    .segmented button.danger.active { background: var(--red-subtle); color: var(--red); }
+    .segmented button.success.active { background: var(--green-subtle); color: var(--green); }
+
+    /* Hero onboarding steps */
+    .steps-strip {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;
+      max-width: 820px; margin: 0 auto 2.5rem; text-align: left;
+    }
+    .step {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 1.15rem 1.25rem; display: flex; gap: 0.85rem; align-items: flex-start;
+    }
+    .step-num {
+      width: 1.75rem; height: 1.75rem; border-radius: 8px; flex-shrink: 0;
+      background: var(--cyan-subtle); color: var(--accent); font-size: 0.8rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid rgba(0, 245, 255, 0.4); box-shadow: 0 0 12px var(--glow-cyan);
+    }
+    .step h4 { font-size: 0.9rem; margin-bottom: 0.25rem; }
+    .step p { font-size: 0.78rem; color: var(--muted); line-height: 1.45; }
+
+    .hero-stat { cursor: pointer; text-align: left; }
+    .hero-stat:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    /* Toast variants */
+    .toast.success { border-color: rgba(0, 255, 136, 0.6); box-shadow: 0 0 20px rgba(0, 255, 136, 0.2); }
+    .toast.error { border-color: rgba(255, 0, 64, 0.6); box-shadow: 0 0 20px rgba(255, 0, 64, 0.2); }
+
+    /* Loading bar */
+    .loading-bar {
+      position: fixed; top: 0; left: var(--sidebar-w); right: 0; height: 2px; z-index: 100;
+      background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
+      background-size: 200% 100%; animation: shimmer 1.2s ease infinite; display: none;
+      pointer-events: none;
+    }
+    @keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+
+    select.policy-select {
+      background: var(--elevated); color: var(--text); border: 1px solid var(--border);
+      border-radius: 8px; padding: 0.35rem 0.65rem; font-size: 0.82rem; cursor: pointer;
+    }
+    select.policy-select:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
+
+    .health-pill strong { display: block; margin-bottom: 0.35rem; font-size: 0.82rem; }
+    .health-bar {
+      height: 4px; background: var(--hover); border-radius: 99px; margin-top: 0.5rem; overflow: hidden;
+    }
+    .health-bar-fill {
+      height: 100%; background: linear-gradient(90deg, var(--accent), var(--green));
+      border-radius: 99px; transition: width 0.4s ease;
+    }
+
+    /* Pending approvals */
+    .pending-panel {
+      background: linear-gradient(135deg, rgba(255, 0, 110, 0.12), rgba(0, 245, 255, 0.08));
+      border: 1px solid rgba(255, 0, 110, 0.45); border-radius: 14px;
+      padding: 1.15rem 1.25rem; margin-bottom: 1.5rem;
+      box-shadow: 0 0 24px var(--glow-magenta);
+    }
+    .pending-panel h3 { font-size: 0.95rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+    .pending-item {
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      padding: 0.75rem 0; border-bottom: 1px solid var(--border-subtle);
+    }
+    .pending-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .pending-meta { font-size: 0.82rem; color: var(--text-secondary); }
+    .pending-meta strong { color: var(--text); display: block; margin-bottom: 0.15rem; }
+
+    /* Forms */
+    .form-row { display: flex; flex-wrap: wrap; gap: 0.65rem; align-items: flex-end; margin-bottom: 1rem; }
+    .form-field { display: flex; flex-direction: column; gap: 0.35rem; flex: 1; min-width: 140px; }
+    .form-field label { font-size: 0.72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .form-input {
+      background: var(--elevated); color: var(--text); border: 1px solid var(--border);
+      border-radius: 10px; padding: 0.55rem 0.75rem; font-size: 0.85rem;
+    }
+    .form-input:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
+    .section-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+
+    /* Hero */
+    .hero-page { position: relative; overflow: hidden; }
+    .hero-bg-shield {
+      position: absolute; inset: -2rem 0 auto 0; height: 620px;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none; z-index: 0;
+    }
+    .hero-shield-icon {
+      width: min(480px, 78vw); height: min(480px, 78vw);
+      stroke: rgba(0, 245, 255, 0.15); fill: rgba(255, 0, 110, 0.06);
+      stroke-width: 1.25;
+      filter: drop-shadow(0 0 100px var(--glow-cyan));
+      transform: rotate(-8deg);
+    }
+    .hero-page > .hero,
+    .hero-page > .feature-grid { position: relative; z-index: 1; }
+    .hero { text-align: center; padding: 3rem 1rem 2rem; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.35rem 1rem; border-radius: 999px;
+      background: var(--cyan-subtle); border: 1px solid rgba(0, 245, 255, 0.45);
+      color: var(--accent); font-size: 0.8rem; font-weight: 700; margin-bottom: 1.5rem;
+      box-shadow: 0 0 20px var(--glow-cyan);
+    }
+    .hero h2 {
+      font-size: clamp(2rem, 5vw, 3rem); font-weight: 700; line-height: 1.15; margin-bottom: 1rem;
+      background: linear-gradient(135deg, var(--text) 0%, var(--accent) 40%, var(--accent2) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub { font-size: 1.1rem; color: var(--text-secondary); max-width: 560px; margin: 0 auto 2rem; line-height: 1.6; }
+    .hero-cta { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-bottom: 3rem; }
+    .hero-stats {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem; max-width: 700px; margin: 0 auto 3rem;
+    }
+    .hero-stat {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .hero-stat:hover { border-color: rgba(0, 245, 255, 0.6); box-shadow: 0 0 32px var(--glow-cyan); }
+    .hero-stat-val { font-size: 2rem; font-weight: 700; color: var(--accent); }
+    .hero-stat-label { font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem; }
+    .feature-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; text-align: left;
+    }
+    .feature {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem;
+      transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+    }
+    .feature:hover {
+      border-color: rgba(255, 0, 110, 0.5); transform: translateY(-3px);
+      box-shadow: 0 8px 36px var(--glow-magenta);
+    }
+    .feature-icon { margin-bottom: 0.75rem; color: var(--accent); }
+    .feature h3 { font-size: 1rem; margin-bottom: 0.5rem; }
+    .feature p { font-size: 0.85rem; color: var(--muted); line-height: 1.5; }
+
+    /* Docs */
+    .docs-layout { display: grid; grid-template-columns: 200px 1fr; gap: 2rem; }
+    .docs-toc { position: sticky; top: 5rem; align-self: start; }
+    .docs-toc a {
+      display: block; padding: 0.4rem 0; color: var(--muted); text-decoration: none; font-size: 0.85rem;
+    }
+    .docs-toc a:hover { color: var(--accent); }
+    .doc-section { margin-bottom: 2.5rem; }
+    .doc-section h2 { font-size: 1.35rem; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+    .doc-section h3 { font-size: 1rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+    .doc-section p, .doc-section li { font-size: 0.9rem; color: var(--muted); line-height: 1.65; margin-bottom: 0.75rem; }
+    .doc-section ul { padding-left: 1.25rem; }
+    .code {
+      background: var(--elevated); border: 1px solid var(--border); border-radius: 10px;
+      padding: 1rem 1.25rem; font-family: 'Cascadia Code', Consolas, monospace; font-size: 0.82rem;
+      color: var(--accent); margin: 0.75rem 0; overflow-x: auto;
+    }
+    .policy-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin: 1rem 0; }
+    .policy-table th, .policy-table td { padding: 0.65rem 1rem; border-bottom: 1px solid var(--border); text-align: left; }
+    .policy-table th { color: var(--muted); font-weight: 600; }
+
+    /* Dashboard (shared) */
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .card:hover { border-color: rgba(0, 245, 255, 0.25); }
+    .card h2 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 0.5rem; }
+    .stat-value { font-size: 2rem; font-weight: 700; }
+    .stat-card.cyan .stat-value { color: var(--accent3); }
+    .stat-card.violet .stat-value { color: var(--purple); }
+    .stat-card.rose .stat-value { color: var(--rose); }
+    .stat-card.emerald .stat-value { color: var(--green); }
+    .stat-label { color: var(--muted); font-size: 0.8rem; margin-top: 0.25rem; }
+    section { margin-bottom: 1.75rem; }
+    section > h2 { font-size: 1.05rem; margin-bottom: 0.75rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th, td { text-align: left; padding: 0.65rem 1rem; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-weight: 500; }
+    .btn {
+      border: 1px solid var(--border); background: var(--elevated); color: var(--text);
+      padding: 0.55rem 1.1rem; border-radius: 10px; cursor: pointer; font-size: 0.85rem;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+    .btn:hover { border-color: rgba(0, 245, 255, 0.6); background: var(--hover); box-shadow: 0 0 12px var(--glow-cyan); }
+    .btn-lg { padding: 0.75rem 1.5rem; font-size: 0.95rem; font-weight: 600; }
+    .btn-danger { border-color: rgba(255, 0, 64, 0.5); color: var(--red); background: var(--red-subtle); }
+    .btn-danger:hover { border-color: var(--red); box-shadow: 0 0 20px rgba(255, 0, 64, 0.35); }
+    .btn-primary {
+      background: var(--brand-gradient);
+      border: none; color: white;
+      box-shadow: 0 4px 24px rgba(255, 0, 110, 0.45);
+    }
+    .btn-primary:hover { box-shadow: 0 6px 36px rgba(0, 245, 255, 0.5); filter: brightness(1.1); }
+    .actions-bar { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+    .tag { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.72rem; font-weight: 600; }
+    .tag-warning { background: var(--yellow-subtle); color: var(--yellow); }
+    .tag-critical { background: var(--red-subtle); color: var(--red); }
+    .tag-allow { background: var(--green-subtle); color: var(--green); }
+    .tag-block { background: var(--red-subtle); color: var(--red); }
+    .empty { color: var(--muted); padding: 2rem; text-align: center; }
+    .toast {
+      position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--elevated);
+      border: 1px solid rgba(0, 245, 255, 0.5); padding: 0.75rem 1.25rem; border-radius: 10px;
+      font-size: 0.85rem; display: none; z-index: 100;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 24px var(--glow-cyan);
+    }
+    @media (max-width: 768px) {
+      .sidebar { width: 64px; }
+      .sidebar .brand-text, .nav-item span, .nav-label, .sidebar-footer { display: none; }
+      .main { margin-left: 64px; }
+      .docs-layout { grid-template-columns: 1fr; }
+      .docs-toc { display: none; }
+    }
+    .file-warn {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(3, 3, 5, 0.92); align-items: center; justify-content: center; padding: 2rem;
+    }
+    .file-warn.visible { display: flex; }
+    .file-warn-box {
+      max-width: 520px; background: var(--elevated); border: 1px solid var(--red);
+      border-radius: 14px; padding: 1.5rem; text-align: center;
+    }
+    .file-warn-box h2 { color: var(--red); margin-bottom: 0.75rem; }
+    .file-warn-box code { display: block; margin: 1rem 0; padding: 0.75rem; background: var(--surface); border-radius: 8px; }
+  </style>
+</head>
+<body data-build="__BUILD_ID__">
+
+  <div id="fileWarn" class="file-warn" role="alert">
+    <div class="file-warn-box">
+      <h2>Wrong way to open the dashboard</h2>
+      <p>Do not open the HTML file directly. Start the service, then use:</p>
+      <code>http://127.0.0.1:9470</code>
+      <p style="color:var(--muted);font-size:0.85rem">Run <code>.\scripts\start.ps1</code> from the project folder first.</p>
+    </div>
+  </div>
+
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+    <symbol id="icon-shield" viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.5 9.5-8 10-4.5-.5-8-5-8-10V6l8-4z"/></symbol>
+    <symbol id="icon-home" viewBox="0 0 24 24"><path d="M3 10.5L12 3l9 7.5V21a1 1 0 01-1 1h-5v-7H9v7H4a1 1 0 01-1-1v-10.5z"/></symbol>
+    <symbol id="icon-dashboard" viewBox="0 0 24 24"><path d="M4 13h6V4H4v9zm10 7h6V11h-6v9zM4 20h6v-5H4v5zm10-11h6V4h-6v5z"/></symbol>
+    <symbol id="icon-docs" viewBox="0 0 24 24"><path d="M6 4h9l3 3v13a1 1 0 01-1 1H6a1 1 0 01-1-1V5a1 1 0 011-1z"/><path d="M15 4v4h4M8 12h8M8 16h8"/></symbol>
+    <symbol id="icon-robot" viewBox="0 0 24 24"><rect x="5" y="8" width="14" height="12" rx="2"/><path d="M9 8V5a3 3 0 016 0v3M9 14h.01M15 14h.01M8 18h8"/></symbol>
+    <symbol id="icon-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 010 18M12 3a15 15 0 000 18"/></symbol>
+    <symbol id="icon-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h5l2 2h9a1 1 0 011 1v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></symbol>
+    <symbol id="icon-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+    <symbol id="icon-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></symbol>
+    <symbol id="icon-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="icon-network" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="10" rx="2"/><path d="M6 11h.01M10 11h4M18 11h.01"/></symbol>
+    <symbol id="icon-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></symbol>
+    <symbol id="icon-refresh" viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-2.6-6.4"/><path d="M21 3v6h-6"/></symbol>
+  </svg>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon"><div class="brand-icon-inner"><svg class="icon"><use href="#icon-shield"/></svg></div></div>
+      <div class="brand-text">
+        <div class="brand-title">AI Firewall</div>
+        <div class="brand-sub">Privacy Control</div>
+      </div>
+    </div>
+
+    <nav class="nav-section">
+      <div class="nav-label">HOME</div>
+      <button type="button" class="nav-item active" data-page="hero" title="Overview and getting started">
+        <span class="nav-icon"><svg class="icon"><use href="#icon-home"/></svg></span><span>Home</span>
+      </button>
+      <button type="button" class="nav-item" data-page="dashboard" title="Live stats and quick actions">
+        <span class="nav-icon"><svg class="icon"><use href="#icon-dashboard"/></svg></span><span>Dashboard</span>
+      </button>
+      <button type="button" class="nav-item" data-page="docs">
+        <span class="nav-icon"><svg class="icon"><use href="#icon-docs"/></svg></span><span>Documentation</span>
+      </button>
+    </nav>
+
+    <nav class="nav-section">
+      <div class="nav-label">MONITOR</div>
+      <button type="button" class="nav-item" data-page="processes">
+        <span class="nav-icon"><svg class="icon"><use href="#icon-robot"/></svg></span><span>AI Processes</span>
+      </button>
+      <button type="button" class="nav-item" data-page="network">
+        <span class="nav-icon"><svg class="icon"><use href="#icon-globe"/></svg></span><span>Network</span>
+      </button>
+    </nav>
+
+    <nav class="nav-section">
+      <div class="nav-label">PROTECT</div>
+      <button type="button" class="nav-item" data-page="files">
+        <span class="nav-icon"><svg class="icon"><use href="#icon-folder"/></svg></span><span>Protected Files</span>
+      </button>
+      <button type="button" class="nav-item" data-page="events">
+        <span class="nav-icon"><svg class="icon"><use href="#icon-list"/></svg></span><span>Activity Log</span>
+      </button>
+      <button type="button" class="nav-item" data-page="settings">
+        <span class="nav-icon"><svg class="icon"><use href="#icon-settings"/></svg></span><span>Settings</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="health-pill">
+        <strong><span class="health-dot" id="healthDot" style="background:var(--red)"></span> <span id="sidebarStatus">Connecting...</span></strong>
+        <div class="health-bar"><div class="health-bar-fill" id="healthBar" style="width:0%"></div></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="loading-bar" id="loadingBar"></div>
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <h1 id="pageTitle">Welcome to AI Firewall</h1>
+        <p id="pageSubtitle">Your central control for AI access on this machine</p>
+      </div>
+      <div class="topbar-actions">
+        <span class="last-updated" id="lastUpdated">—</span>
+        <button class="btn-icon" id="refreshBtn" title="Refresh data" aria-label="Refresh">
+          <svg class="icon" id="refreshIcon"><use href="#icon-refresh"/></svg>
+        </button>
+        <span id="statusBadge" class="status-badge status-inactive">Starting...</span>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- HERO -->
+      <div id="page-hero" class="page active">
+        <div class="hero-page">
+          <div class="hero-bg-shield" aria-hidden="true">
+            <svg class="hero-shield-icon"><use href="#icon-shield"/></svg>
+          </div>
+          <div class="hero">
+          <div class="hero-badge"><svg class="icon"><use href="#icon-shield"/></svg> Privacy-first AI control</div>
+          <h2>Control What AI<br>Can Access</h2>
+          <p class="hero-sub">
+            AI Firewall sits between AI applications and your operating system —
+            letting you decide what files, network traffic, clipboard data, and devices AI tools can reach.
+          </p>
+          <div class="hero-cta">
+            <button class="btn btn-primary btn-lg" onclick="navigate('dashboard')">Open Dashboard</button>
+            <button class="btn btn-lg" onclick="navigate('docs')">How it works</button>
+          </div>
+          <div class="steps-strip">
+            <div class="step"><span class="step-num">1</span><div><h4>Service runs locally</h4><p>AI Firewall monitors your machine in the background — nothing leaves your PC unless you allow it.</p></div></div>
+            <div class="step"><span class="step-num">2</span><div><h4>Set your policies</h4><p>Choose allow, ask, or block for network, clipboard, and protected folders.</p></div></div>
+            <div class="step"><span class="step-num">3</span><div><h4>Take action</h4><p>Block AI apps, stop processes, or deny domains with one click from the dashboard.</p></div></div>
+          </div>
+          <div class="hero-stats">
+            <div class="hero-stat" tabindex="0" role="button" onclick="navigate('processes')" onkeydown="if(event.key==='Enter')navigate('processes')">
+              <div class="hero-stat-val" id="heroAi">—</div><div class="hero-stat-label">AI Processes</div>
+            </div>
+            <div class="hero-stat" tabindex="0" role="button" onclick="navigate('network')" onkeydown="if(event.key==='Enter')navigate('network')">
+              <div class="hero-stat-val" id="heroNet">—</div><div class="hero-stat-label">AI Connections</div>
+            </div>
+            <div class="hero-stat" tabindex="0" role="button" onclick="navigate('events')" onkeydown="if(event.key==='Enter')navigate('events')">
+              <div class="hero-stat-val" id="heroBlocked">—</div><div class="hero-stat-label">Blocked</div>
+            </div>
+            <div class="hero-stat" tabindex="0" role="button" onclick="navigate('files')" onkeydown="if(event.key==='Enter')navigate('files')">
+              <div class="hero-stat-val" id="heroFolders">—</div><div class="hero-stat-label">Protected Folders</div>
+            </div>
+          </div>
+        </div>
+        <div class="feature-grid">
+          <div class="feature"><div class="feature-icon"><svg class="icon icon-lg"><use href="#icon-eye"/></svg></div><h3>Process Monitor</h3><p>Detects ChatGPT, Ollama, Cursor, and 14+ AI tools by process signature and GPU usage.</p></div>
+          <div class="feature"><div class="feature-icon"><svg class="icon icon-lg"><use href="#icon-network"/></svg></div><h3>Network Firewall</h3><p>Monitors and blocks outbound traffic to OpenAI, Anthropic, Gemini, and 16+ AI domains.</p></div>
+          <div class="feature"><div class="feature-icon"><svg class="icon icon-lg"><use href="#icon-folder"/></svg></div><h3>File Access Guard</h3><p>Protects Documents, Photos, Passwords, and custom folders with allow/ask/block policies.</p></div>
+          <div class="feature"><div class="feature-icon"><svg class="icon icon-lg"><use href="#icon-lock"/></svg></div><h3>Clipboard Guard</h3><p>Warns or blocks when AI tries to read passwords, API keys, or tokens from your clipboard.</p></div>
+        </div>
+        </div>
+      </div>
+
+      <!-- DOCS -->
+      <div id="page-docs" class="page">
+        <div class="docs-layout">
+          <nav class="docs-toc">
+            <a href="#start">Quick Start</a>
+            <a href="#approvals">Approvals</a>
+            <a href="#policies">Policies</a>
+            <a href="#actions">User Actions</a>
+            <a href="#troubleshoot">Troubleshooting</a>
+            <a href="#components">Components</a>
+            <a href="#api">API Reference</a>
+            <a href="#admin">Admin Mode</a>
+            <a href="#next">What's Next</a>
+          </nav>
+          <div>
+            <div class="doc-section" id="start">
+              <h2>Quick Start (read this first)</h2>
+              <p><strong>You are looking at the dashboard.</strong> If the badge top-right says <em>Firewall Active</em>, you are done installing.</p>
+              <h3>If the service is NOT running yet</h3>
+              <ol style="line-height:1.8;margin:0.5rem 0 1rem 1.2rem">
+                <li>Open <strong>PowerShell</strong> in the project folder</li>
+                <li>Run: <code>.\scripts\install.ps1</code> (first time only)</li>
+                <li>Run: <code>.\scripts\start.ps1</code></li>
+                <li>Keep that window open. Refresh this page.</li>
+              </ol>
+              <h3>The only three policies you need to know</h3>
+              <table class="policy-table">
+                <tr><th>Policy</th><th>What it does</th></tr>
+                <tr><td><strong>allow</strong></td><td>AI gets access silently.</td></tr>
+                <tr><td><strong>ask</strong></td><td>You must click Allow or Deny on the Dashboard (Pending Approvals).</td></tr>
+                <tr><td><strong>block</strong></td><td>Denied automatically.</td></tr>
+              </table>
+              <p>When unsure, use <strong>ask</strong>. That is the default.</p>
+              <h3>Desktop app (optional)</h3>
+              <div class="code">.\scripts\launch-dashboard.ps1</div>
+              <p>Requires the service above to be running first.</p>
+              <p>Full written guides live in the project <code>docs/</code> folder: INSTALLATION.md, USER_GUIDE.md, TROUBLESHOOTING.md.</p>
+            </div>
+            <div class="doc-section" id="approvals">
+              <h2>Pending Approvals</h2>
+              <p>When policy is <strong>ask</strong>, a yellow panel appears on the Dashboard.</p>
+              <ol style="line-height:1.8;margin:0.5rem 0 1rem 1.2rem">
+                <li>Read which app wants access (e.g. Cursor → network → api.openai.com).</li>
+                <li>Click <strong>Allow</strong> or <strong>Deny</strong>.</li>
+                <li>If you wait 2 minutes, it auto-denies (blocks).</li>
+              </ol>
+              <p>No popup outside the browser? That is normal — check the Dashboard page, not Windows toast notifications.</p>
+            </div>
+            <div class="doc-section" id="policies">
+              <h2>Policies</h2>
+              <p>Every resource AI can access is governed by one of three policies:</p>
+              <table class="policy-table">
+                <tr><th>Policy</th><th>Behavior</th></tr>
+                <tr><td><strong>allow</strong></td><td>Access granted automatically, logged to audit trail.</td></tr>
+                <tr><td><strong>ask</strong></td><td>Prompts you with Allow / Deny before access proceeds.</td></tr>
+                <tr><td><strong>block</strong></td><td>Access denied immediately, no prompt shown.</td></tr>
+              </table>
+              <p>Policies apply per-folder, per-app, and globally (network, clipboard, microphone, camera).</p>
+            </div>
+            <div class="doc-section" id="actions">
+              <h2>User Actions</h2>
+              <h3>AI Processes</h3>
+              <ul>
+                <li><strong>Block</strong> — set app policy to block all resources</li>
+                <li><strong>Allow</strong> — trust the app across files, network, clipboard</li>
+                <li><strong>Stop</strong> — terminate the running process</li>
+              </ul>
+              <h3>Network</h3>
+              <ul>
+                <li><strong>Block Domain</strong> — add Windows Firewall rule for an AI provider</li>
+                <li><strong>Block All AI Domains</strong> — firewall rules for all 16+ known providers</li>
+              </ul>
+              <h3>Protected Files</h3>
+              <ul>
+                <li>Change per-folder policy via dropdown</li>
+                <li>Add custom folders with the <strong>+ Add Folder</strong> button (desktop)</li>
+              </ul>
+            </div>
+            <div class="doc-section" id="troubleshoot">
+              <h2>Troubleshooting</h2>
+              <table class="policy-table">
+                <tr><th>Problem</th><th>Fix</th></tr>
+                <tr><td>Service Offline</td><td>Run <code>.\scripts\start.ps1</code> and keep PowerShell open.</td></tr>
+                <tr><td>No pending requests</td><td>Policy may be <em>allow</em>, or no AI app is running.</td></tr>
+                <tr><td>Block Domain fails</td><td>Restart PowerShell <strong>as Administrator</strong>.</td></tr>
+                <tr><td>Clipboard warning in logs</td><td>Harmless — poll mode still works.</td></tr>
+              </table>
+              <p>Run <code>python scripts\test-live-approval.py</code> to verify approvals work.</p>
+            </div>
+            <div class="doc-section" id="components">
+              <h2>Components</h2>
+              <ul>
+                <li><strong>Process Monitor</strong> — polls every 2s for known AI signatures</li>
+                <li><strong>AI Detector</strong> — finds local .gguf/.safetensors models and GPU workloads</li>
+                <li><strong>Network Firewall</strong> — tracks TCP connections to AI endpoints</li>
+                <li><strong>File Access Guard</strong> — directory watchers on protected paths</li>
+                <li><strong>Clipboard Guard</strong> — sensitive pattern detection (passwords, API keys)</li>
+                <li><strong>Browser Protection</strong> — scans Chrome, Edge, Firefox for AI extensions</li>
+                <li><strong>Permission Manager</strong> — SQLite audit log and per-app grants</li>
+              </ul>
+            </div>
+            <div class="doc-section" id="api">
+              <h2>API Reference</h2>
+              <p>The service exposes a REST API at <code>http://127.0.0.1:9470</code>:</p>
+              <table class="policy-table">
+                <tr><th>Endpoint</th><th>Description</th></tr>
+                <tr><td>GET /api/status</td><td>Live firewall status, processes, connections</td></tr>
+                <tr><td>POST /api/process/block</td><td>Block an AI app by name</td></tr>
+                <tr><td>POST /api/process/terminate</td><td>Stop a process by PID</td></tr>
+                <tr><td>POST /api/policy/folder</td><td>Set folder policy (allow/ask/block)</td></tr>
+                <tr><td>POST /api/policy/global</td><td>Set network or clipboard policy</td></tr>
+                <tr><td>POST /api/firewall/block-all</td><td>Block all AI provider domains</td></tr>
+                <tr><td>POST /api/approve/{id}</td><td>Allow or deny a pending request</td></tr>
+              </table>
+            </div>
+            <div class="doc-section" id="admin">
+              <h2>Administrator Mode</h2>
+              <p>Some actions require elevated privileges:</p>
+              <ul>
+                <li>Windows Firewall domain blocking (<code>netsh advfirewall</code>)</li>
+                <li>Hosts file modification for AI website blocking</li>
+                <li>Terminating protected system processes</li>
+              </ul>
+              <p>Run AI Firewall as Administrator for full network blocking capability.</p>
+            </div>
+            <div class="doc-section" id="next">
+              <h2>What's Next (not required for daily use)</h2>
+              <p>These need extra setup and are optional:</p>
+              <ul>
+                <li><strong>Kernel minifilter</strong> — blocks file opens before they happen (needs WDK + driver signing)</li>
+                <li><strong>Windows Service install</strong> — <code>.\scripts\install-service.ps1</code> (admin)</li>
+                <li><strong>Enterprise policy</strong> — <code>.\scripts\start-policy-server.ps1</code></li>
+                <li><strong>Linux agent</strong> — scaffold only, see <code>linux/aishield-ebpf/</code></li>
+              </ul>
+              <p>See <code>docs/NEXT.md</code> in the project for the full list.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DASHBOARD -->
+      <div id="page-dashboard" class="page">
+        <div class="grid">
+          <div class="card stat-card cyan" onclick="navigate('processes')" title="View AI processes">
+            <h2>AI Processes</h2><div class="stat-value" id="aiCount">—</div><div class="stat-label">Running now</div>
+            <div class="stat-hint">Click to manage →</div>
+          </div>
+          <div class="card stat-card violet" onclick="navigate('network')" title="View network traffic">
+            <h2>AI Traffic</h2><div class="stat-value" id="netCount">—</div><div class="stat-label">Active connections</div>
+            <div class="stat-hint">Click to inspect →</div>
+          </div>
+          <div class="card stat-card rose" onclick="navigate('events')" title="View activity log">
+            <h2>Blocked</h2><div class="stat-value" id="blockedCount">—</div><div class="stat-label">Total denials</div>
+            <div class="stat-hint">View log →</div>
+          </div>
+          <div class="card stat-card emerald" onclick="navigate('files')" title="Manage protected folders">
+            <h2>Protected</h2><div class="stat-value" id="folderCount">—</div><div class="stat-label">Folders guarded</div>
+            <div class="stat-hint">Manage folders →</div>
+          </div>
+        </div>
+        <section id="pendingSection" style="display:none">
+          <div class="pending-panel">
+            <h3><svg class="icon"><use href="#icon-lock"/></svg> Pending Approvals — action required</h3>
+            <div id="pendingList"></div>
+          </div>
+        </section>
+        <section>
+          <div class="section-header">
+            <h2>Quick Actions</h2>
+            <p>Common protections grouped by area. Destructive actions will ask for confirmation.</p>
+          </div>
+          <div class="action-panels">
+            <div class="action-panel">
+              <div class="action-panel-title">Network</div>
+              <div class="actions-bar">
+                <button class="btn btn-danger btn-sm" onclick="confirmAct('/api/firewall/block-all', null, 'Block all known AI provider domains?')">Block All AI Domains</button>
+                <button class="btn btn-sm" onclick="setPolicy('network_policy','block')">Block All Network</button>
+                <button class="btn btn-sm" onclick="setPolicy('network_policy','allow')">Allow Network</button>
+              </div>
+            </div>
+            <div class="action-panel">
+              <div class="action-panel-title">Emergency</div>
+              <div class="actions-bar">
+                <button class="btn btn-danger btn-sm" onclick="confirmAct('/api/lockdown', null, 'Enable lockdown? This blocks network, clipboard, mic, camera, and AI domains.')">Lockdown Mode</button>
+                <button class="btn btn-sm" onclick="confirmAct('/api/process/terminate-all', null, 'Stop all detected AI processes now?')">Stop All AI</button>
+                <button class="btn btn-sm" onclick="act('/api/restore-defaults')">Restore Defaults</button>
+              </div>
+            </div>
+            <div class="action-panel">
+              <div class="action-panel-title">Browser &amp; Clipboard</div>
+              <div class="actions-bar">
+                <button class="btn btn-primary btn-sm" onclick="act('/api/browser/scan')">Scan Extensions</button>
+                <button class="btn btn-sm" onclick="act('/api/browser/block-websites')">Block AI Websites</button>
+                <button class="btn btn-sm" onclick="setPolicy('clipboard_policy','block')">Block Clipboard</button>
+              </div>
+            </div>
+            <div class="action-panel">
+              <div class="action-panel-title">Local AI</div>
+              <div class="actions-bar">
+                <button class="btn btn-sm" onclick="act('/api/models/scan')">Scan Local Models</button>
+                <button class="btn btn-sm" onclick="navigate('processes')">View Processes</button>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section>
+          <div class="section-header">
+            <h2>Recent Activity</h2>
+            <p>Latest access decisions across your system.</p>
+          </div>
+          <div class="table-wrap">
+            <div class="card">
+              <table>
+                <thead><tr><th>Time</th><th>Source</th><th>Type</th><th>Action</th><th>Message</th></tr></thead>
+                <tbody id="eventTable"><tr><td colspan="5"><div class="empty-state"><svg class="icon empty-icon"><use href="#icon-list"/></svg><h3>No activity yet</h3><p>Events appear here when AI apps request access to files, network, or clipboard.</p></div></td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- PROCESSES -->
+      <div id="page-processes" class="page">
+        <section>
+          <div class="section-header">
+            <h2>AI Processes</h2>
+            <p>Detected AI applications on this machine. Block to deny all access, Allow to trust, or Stop to terminate.</p>
+          </div>
+          <div class="table-wrap">
+            <div class="card">
+              <table>
+                <thead><tr><th>Process</th><th>Type</th><th>PID</th><th>GPU</th><th>Confidence</th><th>Actions</th></tr></thead>
+                <tbody id="aiTable"><tr><td colspan="6"><div class="empty-state"><svg class="icon empty-icon"><use href="#icon-robot"/></svg><h3>No AI processes detected</h3><p>Your system looks clean. AI Firewall continues monitoring in the background.</p></div></td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- NETWORK -->
+      <div id="page-network" class="page">
+        <section>
+          <div class="section-header">
+            <h2>AI Network Connections</h2>
+            <p>Outbound traffic to known AI services. Block a connection or entire domain.</p>
+          </div>
+          <div class="table-wrap">
+            <div class="card">
+              <table>
+                <thead><tr><th>Process</th><th>Remote Host</th><th>Address</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody id="netTable"><tr><td colspan="5"><div class="empty-state"><svg class="icon empty-icon"><use href="#icon-globe"/></svg><h3>No AI network traffic</h3><p>Connections to OpenAI, Anthropic, and other AI endpoints will show here.</p></div></td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- FILES -->
+      <div id="page-files" class="page">
+        <section>
+          <div class="section-header">
+            <h2>Protected Folders</h2>
+            <p>Add folders to guard and set how AI apps may access them.</p>
+          </div>
+          <div class="card" style="margin-bottom:1.25rem">
+            <div class="form-row">
+              <div class="form-field">
+                <label for="folderName">Display name</label>
+                <input class="form-input" id="folderName" placeholder="e.g. Tax Documents">
+              </div>
+              <div class="form-field" style="flex:2">
+                <label for="folderPath">Folder path</label>
+                <input class="form-input" id="folderPath" placeholder="C:\Users\You\Documents\Private">
+              </div>
+              <div class="form-field" style="flex:0 0 120px">
+                <label for="folderPolicy">Policy</label>
+                <select class="policy-select" id="folderPolicy" style="width:100%">
+                  <option value="ask">ask</option>
+                  <option value="allow">allow</option>
+                  <option value="block">block</option>
+                </select>
+              </div>
+              <button class="btn btn-primary" onclick="addFolder()">Add Folder</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <div class="card">
+              <table>
+                <thead><tr><th>Name</th><th>Path</th><th>Policy</th><th>Change Policy</th><th>Actions</th></tr></thead>
+                <tbody id="folderTable"><tr><td colspan="5"><div class="empty-state"><svg class="icon empty-icon"><use href="#icon-folder"/></svg><h3>Loading folders…</h3></div></td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- EVENTS -->
+      <div id="page-events" class="page">
+        <section>
+          <div class="section-header">
+            <h2>Activity Log</h2>
+            <p>Full audit trail of allow, deny, and block decisions.</p>
+          </div>
+          <div class="section-actions">
+            <button class="btn btn-sm" onclick="exportAudit()">Export CSV</button>
+            <button class="btn btn-sm" onclick="loadAuditLog()">Load Full Audit</button>
+          </div>
+          <div class="table-wrap">
+            <div class="card">
+              <table>
+                <thead><tr><th>Time</th><th>Source</th><th>Type</th><th>Action</th><th>Message</th></tr></thead>
+                <tbody id="eventTableFull"><tr><td colspan="5"><div class="empty-state"><svg class="icon empty-icon"><use href="#icon-list"/></svg><h3>No events yet</h3><p>Access decisions will be logged here automatically.</p></div></td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- SETTINGS -->
+      <div id="page-settings" class="page">
+        <section>
+          <div class="section-header">
+            <h2>Global Policies</h2>
+            <p>Default rules applied before per-app or per-folder overrides.</p>
+          </div>
+          <div class="card" style="margin-bottom:1.5rem">
+            <div class="policy-row">
+              <div class="policy-label">Network traffic to AI services</div>
+              <div class="policy-desc">Controls outbound connections to OpenAI, Anthropic, and similar providers.</div>
+              <div class="segmented" id="netPolicy">
+                <button data-val="allow" onclick="setPolicySeg('network_policy','allow',this)">Allow</button>
+                <button data-val="ask" onclick="setPolicySeg('network_policy','ask',this)">Ask</button>
+                <button data-val="block" class="danger" onclick="setPolicySeg('network_policy','block',this)">Block</button>
+              </div>
+            </div>
+            <div class="policy-row">
+              <div class="policy-label">Clipboard access</div>
+              <div class="policy-desc">When AI tries to read copied passwords, keys, or sensitive text.</div>
+              <div class="segmented" id="clipPolicy">
+                <button data-val="allow" onclick="setPolicySeg('clipboard_policy','allow',this)">Allow</button>
+                <button data-val="ask" onclick="setPolicySeg('clipboard_policy','ask',this)">Ask</button>
+                <button data-val="block" class="danger" onclick="setPolicySeg('clipboard_policy','block',this)">Block</button>
+              </div>
+            </div>
+            <div class="policy-row">
+              <div class="policy-label">Screenshots &amp; screen capture</div>
+              <div class="policy-desc">When AI tools attempt to capture your screen or window content.</div>
+              <div class="segmented" id="screenPolicy">
+                <button data-val="allow" onclick="setPolicySeg('screenshot_policy','allow',this)">Allow</button>
+                <button data-val="ask" onclick="setPolicySeg('screenshot_policy','ask',this)">Ask</button>
+                <button data-val="block" class="danger" onclick="setPolicySeg('screenshot_policy','block',this)">Block</button>
+              </div>
+            </div>
+            <div class="policy-row">
+              <div class="policy-label">Microphone access</div>
+              <div class="policy-desc">Voice input and audio recording by AI assistants.</div>
+              <div class="segmented" id="micPolicy">
+                <button data-val="allow" onclick="setPolicySeg('microphone_policy','allow',this)">Allow</button>
+                <button data-val="ask" onclick="setPolicySeg('microphone_policy','ask',this)">Ask</button>
+                <button data-val="block" class="danger" onclick="setPolicySeg('microphone_policy','block',this)">Block</button>
+              </div>
+            </div>
+            <div class="policy-row">
+              <div class="policy-label">Camera access</div>
+              <div class="policy-desc">Webcam and video capture by AI applications.</div>
+              <div class="segmented" id="camPolicy">
+                <button data-val="allow" onclick="setPolicySeg('camera_policy','allow',this)">Allow</button>
+                <button data-val="ask" onclick="setPolicySeg('camera_policy','ask',this)">Ask</button>
+                <button data-val="block" class="danger" onclick="setPolicySeg('camera_policy','block',this)">Block</button>
+              </div>
+            </div>
+          </div>
+          <div class="section-header">
+            <h2>App Rules</h2>
+            <p>Per-application overrides saved from your Block / Allow / Ask decisions.</p>
+          </div>
+          <div class="table-wrap" style="margin-bottom:1.5rem">
+            <div class="card">
+              <table>
+                <thead><tr><th>App</th><th>Default</th><th>Files</th><th>Network</th><th>Clipboard</th><th>Mic</th><th>Camera</th><th>Actions</th></tr></thead>
+                <tbody id="appPolicyTable"><tr><td colspan="8"><div class="empty-state"><svg class="icon empty-icon"><use href="#icon-robot"/></svg><h3>No saved app rules</h3><p>Block or allow an AI process to create a rule here.</p></div></td></tr></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="section-header">
+            <h2>System Actions</h2>
+            <p>One-time scans, emergency controls, and bulk blocking.</p>
+          </div>
+          <div class="actions-bar" style="margin-bottom:1.5rem">
+            <button class="btn btn-danger" onclick="confirmAct('/api/lockdown', null, 'Enable lockdown? Blocks network, clipboard, mic, camera, and AI domains.')">Lockdown Mode</button>
+            <button class="btn btn-danger" onclick="confirmAct('/api/process/terminate-all', null, 'Stop all detected AI processes?')">Stop All AI</button>
+            <button class="btn" onclick="act('/api/restore-defaults')">Restore Defaults</button>
+            <button class="btn btn-danger" onclick="confirmAct('/api/firewall/block-all', null, 'Block all known AI provider domains via Windows Firewall?')">Block All AI Domains</button>
+            <button class="btn btn-primary" onclick="scanExtensions()">Scan Extensions</button>
+            <button class="btn" onclick="scanModels()">Scan Local Models</button>
+            <button class="btn" onclick="act('/api/browser/block-websites')">Block AI Websites</button>
+          </div>
+          <div class="section-header">
+            <h2>Browser Extensions</h2>
+            <p>AI-related extensions found in Chrome, Edge, or Firefox.</p>
+          </div>
+          <div class="table-wrap" style="margin-bottom:1.5rem">
+            <div class="card">
+              <table>
+                <thead><tr><th>Browser</th><th>Name</th><th>Extension ID</th><th>Path</th></tr></thead>
+                <tbody id="extTable"><tr><td colspan="4"><div class="empty-state"><svg class="icon empty-icon"><use href="#icon-globe"/></svg><h3>No extensions scanned</h3><p>Click Scan Extensions to check your browsers.</p></div></td></tr></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="section-header">
+            <h2>Local AI Models</h2>
+            <p>Large model files detected on this machine.</p>
+          </div>
+          <div class="table-wrap">
+            <div class="card">
+              <table>
+                <thead><tr><th>Path</th><th>Size</th><th>Type</th></tr></thead>
+                <tbody id="modelTable"><tr><td colspan="3"><div class="empty-state"><svg class="icon empty-icon"><use href="#icon-robot"/></svg><h3>No models scanned</h3><p>Click Scan Local Models to search for .gguf, .safetensors, and similar files.</p></div></td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const PAGE_META = {
+      hero:      { title: 'Welcome to AI Firewall',       sub: 'Overview, live stats, and getting started' },
+      docs:      { title: 'Documentation',                sub: 'Guides, policies, and API reference' },
+      dashboard: { title: 'Dashboard',                    sub: 'Live overview — click any stat card to drill down' },
+      processes: { title: 'AI Processes',                 sub: 'Block, allow, or stop detected AI applications' },
+      network:   { title: 'Network Firewall',             sub: 'Monitor and block AI service traffic' },
+      files:     { title: 'Protected Files',              sub: 'Set allow, ask, or block per folder' },
+      events:    { title: 'Activity Log',                 sub: 'Full audit trail of access decisions' },
+      settings:  { title: 'Settings',                     sub: 'Global policies and system-wide actions' },
+    };
+
+    let globalPolicies = {
+      network_policy: 'ask', clipboard_policy: 'ask',
+      screenshot_policy: 'ask', microphone_policy: 'ask', camera_policy: 'ask',
+    };
+
+    let _currentPage = 'hero';
+    let _lastNavPage = '';
+    let _lastNavAt = 0;
+
+    function navigate(page) {
+      const now = Date.now();
+      if (page === _lastNavPage && now - _lastNavAt < 80) return;
+      _lastNavPage = page;
+      _lastNavAt = now;
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById('page-' + page)?.classList.add('active');
+      document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add('active');
+      const meta = PAGE_META[page] || PAGE_META.hero;
+      const titleEl = document.getElementById('pageTitle');
+      const subEl = document.getElementById('pageSubtitle');
+      if (titleEl) titleEl.textContent = meta.title;
+      if (subEl) subEl.textContent = meta.sub;
+      location.hash = page;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      _currentPage = page;
+      if (page === 'settings') loadSettingsPage();
+      if (page === 'events') loadAuditLog();
+    }
+
+    function loadSettingsPage() {
+      loadAppPolicies();
+      loadExtensions();
+      loadModels();
+    }
+
+    function tag(cls, t) { return `<span class="tag tag-${cls}">${t}</span>`; }
+    function fmtTime(iso) { return new Date(iso).toLocaleTimeString(); }
+    function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+
+    function toast(msg, type) {
+      const el = document.getElementById('toast');
+      if (!el) return;
+      el.textContent = msg;
+      el.className = 'toast' + (type ? ' ' + type : '');
+      el.style.display = 'block';
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => { el.style.display = 'none'; }, 3500);
+    }
+
+    let _refreshInFlight = false;
+    let _actionInFlight = 0;
+    let _refreshTimer = null;
+    let _healthTimer = null;
+    let _dataTimer = null;
+
+    function scheduleRefresh(delayMs = 800) {
+      clearTimeout(_refreshTimer);
+      _refreshTimer = setTimeout(() => {
+        if (_actionInFlight > 0) {
+          scheduleRefresh(1000);
+          return;
+        }
+        refresh(false);
+      }, delayMs);
+    }
+
+    async function fetchJson(url, opts = {}, timeoutMs = 8000) {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+      try {
+        const r = await fetch(url, { ...opts, signal: ctrl.signal });
+        clearTimeout(timer);
+        let d = null;
+        try { d = await r.json(); } catch { d = { ok: false, error: 'Invalid response' }; }
+        return { ok: r.ok, status: r.status, data: d };
+      } catch (e) {
+        clearTimeout(timer);
+        const msg = e.name === 'AbortError' ? 'Request timed out — is the service running?' : e.message;
+        return { ok: false, status: 0, data: { ok: false, error: msg } };
+      }
+    }
+
+    function setLoading(on) {
+      document.getElementById('loadingBar').style.display = on ? 'block' : 'none';
+      document.getElementById('refreshIcon')?.classList.toggle('spin', on);
+    }
+
+    async function act(url, body) {
+      _actionInFlight++;
+      toast('Working…', 'success');
+      try {
+        const opts = body
+          ? { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) }
+          : { method:'POST' };
+        const res = await fetchJson(url, opts, 30000);
+        const d = res.data || {};
+        const msg = d.message || (d.count != null ? `Found ${d.count} item(s)` : null) || (d.ok ? 'Done' : (d.error || `Failed (${res.status || 'offline'})`));
+        toast(msg, d.ok && res.ok ? 'success' : 'error');
+        if (d.ok && res.ok) scheduleRefresh();
+        return d;
+      } catch(e) {
+        toast('Error: ' + e.message, 'error');
+        return { ok: false };
+      } finally {
+        _actionInFlight = Math.max(0, _actionInFlight - 1);
+      }
+    }
+
+    function confirmAct(url, body, message) {
+      if (confirm(message)) act(url, body);
+    }
+
+    const setPolicy = (k,v) => act('/api/policy/global', { key:k, value:v });
+    function setPolicySeg(key, val, btn) {
+      const seg = btn.parentElement;
+      seg.querySelectorAll('button').forEach(b => {
+        b.classList.remove('active', 'success', 'danger');
+        if (b.dataset.val === val) {
+          b.classList.add('active');
+          if (val === 'allow') b.classList.add('success');
+          if (val === 'block') b.classList.add('danger');
+        }
+      });
+      globalPolicies[key] = val;
+      setPolicy(key, val);
+    }
+    function syncPolicyUI() {
+      const map = {
+        network_policy: 'netPolicy',
+        clipboard_policy: 'clipPolicy',
+        screenshot_policy: 'screenPolicy',
+        microphone_policy: 'micPolicy',
+        camera_policy: 'camPolicy',
+      };
+      Object.entries(map).forEach(([key, id]) => {
+        const seg = document.getElementById(id);
+        if (!seg) return;
+        const val = globalPolicies[key] || 'ask';
+        seg.querySelectorAll('button').forEach(b => {
+          b.classList.remove('active', 'success', 'danger');
+          if (b.dataset.val === val) {
+            b.classList.add('active');
+            if (val === 'allow') b.classList.add('success');
+            if (val === 'block') b.classList.add('danger');
+          }
+        });
+      });
+    }
+
+    const blockApp  = n => confirmAct('/api/process/block', { app_name:n, action:'block' }, `Block "${n}" from all AI access?`);
+    const askApp    = n => act('/api/process/ask', { app_name:n, action:'ask' });
+    const allowApp  = n => act('/api/process/allow', { app_name:n, action:'allow' });
+    const stopProc  = p => confirmAct('/api/process/terminate', { pid:p }, `Stop process ${p}?`);
+    const blockConn = p => act('/api/firewall/block-connection', { pid:p });
+    const blockDom  = d => confirmAct('/api/firewall/block-domain', { domain:d }, `Block domain "${d}"?`);
+    const unblockDom = d => confirmAct('/api/firewall/unblock-domain', { domain:d }, `Unblock domain "${d}"?`);
+    const setFolderPolicy = (n,p) => act('/api/policy/folder', { folder_name:n, policy:p });
+    const removeFolder = n => confirmAct('/api/folders/remove', { folder_name:n }, `Remove "${n}" from protected folders?`);
+    const removeAppPolicy = n => confirmAct('/api/policy/app/remove', { app_name:n }, `Remove saved rules for "${n}"?`);
+    const approveReq = (id, allow) => act(`/api/approve/${id}?allow=${allow}`, null);
+
+    async function addFolder() {
+      const name = document.getElementById('folderName').value.trim();
+      const path = document.getElementById('folderPath').value.trim();
+      const policy = document.getElementById('folderPolicy').value;
+      if (!name || !path) { toast('Enter a name and folder path', 'error'); return; }
+      const ok = await act('/api/folders/add', { name, path, policy });
+      if (ok?.ok) {
+        document.getElementById('folderName').value = '';
+        document.getElementById('folderPath').value = '';
+      }
+    }
+
+    function exportAudit() {
+      window.open('/api/audit/export', '_blank');
+      toast('Downloading audit log…', 'success');
+    }
+
+    async function loadAuditLog() {
+      try {
+        const rows = await (await fetch('/api/audit?limit=200')).json();
+        const tb = document.getElementById('eventTableFull');
+        if (!rows.length) {
+          tb.innerHTML = emptyRow(5, 'list', 'No audit entries', 'Decisions will appear here as AI apps request access.');
+          return;
+        }
+        tb.innerHTML = rows.map(e =>
+          `<tr><td>${fmtTime(e.timestamp)}</td><td>${esc(e.app_name || '—')}</td><td>${esc(e.resource_type || '—')}</td>
+           <td>${tag(e.action || e.decision || 'info', e.action || e.decision || '—')}</td><td>${esc(e.message || '')}</td></tr>`
+        ).join('');
+        toast(`Loaded ${rows.length} audit entries`, 'success');
+      } catch (e) { toast('Failed to load audit log', 'error'); }
+    }
+
+    async function scanExtensions() {
+      const d = await act('/api/browser/scan');
+      if (d?.ok) setTimeout(() => loadExtensions(), 3000);
+    }
+
+    async function scanModels() {
+      const d = await act('/api/models/scan');
+      if (d?.ok) setTimeout(() => loadModels(), 5000);
+    }
+
+    async function loadExtensions() {
+      try {
+        const exts = await (await fetch('/api/extensions')).json();
+        renderExtensions(exts);
+      } catch {}
+    }
+
+    async function loadModels() {
+      try {
+        const models = await (await fetch('/api/models')).json();
+        renderModels(models);
+      } catch {}
+    }
+
+    function renderExtensions(exts) {
+      const tb = document.getElementById('extTable');
+      if (!tb) return;
+      if (!exts?.length) {
+        tb.innerHTML = emptyRow(4, 'globe', 'No AI extensions found', 'Your browsers look clean.');
+        return;
+      }
+      tb.innerHTML = exts.map(e =>
+        `<tr><td>${esc(e.browser)}</td><td>${esc(e.name)}</td><td style="font-family:monospace;font-size:0.78rem">${esc(e.id)}</td>
+         <td style="font-family:monospace;font-size:0.75rem">${esc(e.path)}</td></tr>`
+      ).join('');
+    }
+
+    function renderModels(models) {
+      const tb = document.getElementById('modelTable');
+      if (!tb) return;
+      if (!models?.length) {
+        tb.innerHTML = emptyRow(3, 'robot', 'No large model files found', 'Scan checks common locations for .gguf and similar files.');
+        return;
+      }
+      tb.innerHTML = models.map(m =>
+        `<tr><td style="font-family:monospace;font-size:0.78rem">${esc(m.path)}</td>
+         <td>${m.size_mb} MB</td><td>${esc(m.type)}</td></tr>`
+      ).join('');
+    }
+
+    async function loadAppPolicies() {
+      try {
+        const policies = await (await fetch('/api/policies/apps')).json();
+        renderAppPolicies(policies);
+      } catch {}
+    }
+
+    function renderAppPolicies(policies) {
+      const tb = document.getElementById('appPolicyTable');
+      if (!tb) return;
+      if (!policies?.length) {
+        tb.innerHTML = emptyRow(8, 'robot', 'No saved app rules', 'Block or allow an AI process to create a rule here.');
+        return;
+      }
+      const policySelect = (app, resource, current) =>
+        `<select class="policy-select" data-app="${esc(app)}" data-resource="${resource}" onchange="setAppResourceFromEl(this)">
+          ${['allow','ask','block'].map(v => `<option value="${v}" ${current===v?'selected':''}>${v}</option>`).join('')}
+        </select>`;
+      tb.innerHTML = policies.map(p =>
+        `<tr><td>${esc(p.app_name)}</td>
+         <td>${policySelect(p.app_name, 'default', p.default_action)}</td>
+         <td>${policySelect(p.app_name, 'files', p.files)}</td>
+         <td>${policySelect(p.app_name, 'network', p.network)}</td>
+         <td>${policySelect(p.app_name, 'clipboard', p.clipboard)}</td>
+         <td>${policySelect(p.app_name, 'microphone', p.microphone)}</td>
+         <td>${policySelect(p.app_name, 'camera', p.camera)}</td>
+         <td><button class="btn btn-danger btn-sm" data-app="${esc(p.app_name)}" onclick="removeAppPolicy(this.dataset.app)">Remove</button></td></tr>`
+      ).join('');
+    }
+
+    const setAppResourceFromEl = el =>
+      act('/api/policy/app/resource', { app_name: el.dataset.app, resource: el.dataset.resource, policy: el.value });
+
+    function renderPending(requests) {
+      const section = document.getElementById('pendingSection');
+      const list = document.getElementById('pendingList');
+      if (!section || !list) return;
+      if (!requests?.length) { section.style.display = 'none'; return; }
+      section.style.display = 'block';
+      list.innerHTML = requests.map(r =>
+        `<div class="pending-item">
+          <div class="pending-meta">
+            <strong>${esc(r.app_name)} wants ${esc(r.resource_type)} access</strong>
+            ${esc(r.resource_path)}
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-success btn-sm" onclick="approveReq('${esc(r.id)}', true)">Allow</button>
+            <button class="btn btn-danger btn-sm" onclick="approveReq('${esc(r.id)}', false)">Deny</button>
+          </div>
+        </div>`
+      ).join('');
+    }
+
+    function emptyRow(cols, icon, title, desc) {
+      return `<tr><td colspan="${cols}"><div class="empty-state">
+        <svg class="icon empty-icon"><use href="#icon-${icon}"/></svg>
+        <h3>${title}</h3><p>${desc}</p></div></td></tr>`;
+    }
+
+    function renderEvents(events, tbodyId, limit) {
+      const tb = document.getElementById(tbodyId);
+      if (!tb) return;
+      const rows = limit ? events.slice(0, limit) : events;
+      if (!rows.length) {
+        tb.innerHTML = emptyRow(5, 'list', 'No activity yet', 'Events appear when AI apps request access.');
+        return;
+      }
+      tb.innerHTML = rows.map(e =>
+        `<tr><td>${fmtTime(e.timestamp)}</td><td>${esc(e.source_app)}</td><td>${esc(e.resource_type)}</td>
+         <td>${tag(e.action, e.action)}</td><td>${esc(e.message)}</td></tr>`
+      ).join('');
+    }
+
+    function healthPct(ai, net, blocked, pending) {
+      return Math.max(25, Math.min(100, 100 - ai * 8 - net * 5 - (pending || 0) * 15));
+    }
+
+    async function refresh(manual) {
+      if (_actionInFlight > 0 && !manual) return;
+      if (_refreshInFlight) {
+        if (manual) toast('Refresh already in progress…', 'error');
+        return;
+      }
+      _refreshInFlight = true;
+      if (manual) setLoading(true);
+      try {
+        const res = await fetchJson('/api/status', {}, 15000);
+        if (!res.ok) throw new Error(res.data?.error || 'Service unavailable');
+        const data = res.data;
+        const active = !!data.running;
+        const badge = document.getElementById('statusBadge');
+        const sidebar = document.getElementById('sidebarStatus');
+        const dot = document.getElementById('healthDot');
+        const bar = document.getElementById('healthBar');
+        const updated = document.getElementById('lastUpdated');
+        if (badge) {
+          badge.textContent = active ? 'Active' : 'Offline';
+          badge.className = 'status-badge ' + (active ? 'status-active' : 'status-inactive');
+        }
+        if (sidebar) sidebar.textContent = active ? 'Firewall Active' : 'Offline';
+        if (dot) dot.style.background = active ? 'var(--green)' : 'var(--red)';
+
+        const ai = data.ai_processes?.length ?? 0;
+        const net = data.active_connections?.length ?? 0;
+        const blocked = data.stats?.permissions?.blocked ?? 0;
+        const folders = data.protected_folders?.length ?? 0;
+        const pending = data.pending_requests?.length ?? 0;
+        const pct = active ? healthPct(ai, net, blocked, pending) : 0;
+        if (bar) bar.style.width = pct + '%';
+        if (updated) updated.textContent = 'Updated ' + new Date().toLocaleTimeString();
+
+        if (!window._policiesLoaded) {
+          try {
+            const cfgRes = await fetchJson('/api/config');
+            const cfg = cfgRes.data || {};
+            if (cfg.network_policy) globalPolicies.network_policy = cfg.network_policy;
+            if (cfg.clipboard_policy) globalPolicies.clipboard_policy = cfg.clipboard_policy;
+            if (cfg.screenshot_policy) globalPolicies.screenshot_policy = cfg.screenshot_policy;
+            if (cfg.microphone_policy) globalPolicies.microphone_policy = cfg.microphone_policy;
+            if (cfg.camera_policy) globalPolicies.camera_policy = cfg.camera_policy;
+            window._policiesLoaded = true;
+            syncPolicyUI();
+          } catch {}
+        }
+
+        renderPending(data.pending_requests || []);
+
+        ['aiCount','heroAi'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = ai; });
+        ['netCount','heroNet'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = net; });
+        ['blockedCount','heroBlocked'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = blocked; });
+        ['folderCount','heroFolders'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = folders; });
+
+        const aiTb = document.getElementById('aiTable');
+        if (aiTb) {
+          if (ai) {
+            aiTb.innerHTML = data.ai_processes.map(p =>
+            `<tr><td>${esc(p.name)}</td><td>${esc(p.ai_type)}</td><td>${p.pid}</td>
+             <td>${p.gpu_mb ? p.gpu_mb.toFixed(0)+' MB' : '—'}</td><td>${p.confidence}%</td>
+             <td><div class="btn-group">
+               <button class="btn btn-danger btn-sm" data-app="${esc(p.ai_type)}" onclick="blockApp(this.dataset.app)">Block</button>
+               <button class="btn btn-sm" data-app="${esc(p.ai_type)}" onclick="askApp(this.dataset.app)">Ask</button>
+               <button class="btn btn-success btn-sm" data-app="${esc(p.ai_type)}" onclick="allowApp(this.dataset.app)">Allow</button>
+               <button class="btn btn-danger btn-sm" onclick="stopProc(${p.pid})">Stop</button>
+             </div></td></tr>`
+            ).join('');
+          } else {
+            aiTb.innerHTML = emptyRow(6, 'robot', 'No AI processes detected', 'Your system looks clean. Monitoring continues in the background.');
+          }
+        }
+
+        const netTb = document.getElementById('netTable');
+        if (netTb) {
+          if (net) {
+            netTb.innerHTML = data.active_connections.map(c =>
+            `<tr><td>${esc(c.process_name)}</td><td>${esc(c.remote_host)}</td><td>${esc(c.remote_addr)}</td>
+             <td>${tag('warning','AI Traffic')}</td>
+             <td><div class="btn-group">
+               <button class="btn btn-danger btn-sm" onclick="blockConn(${c.pid})">Block</button>
+               <button class="btn btn-sm" data-domain="${esc(c.remote_host)}" onclick="blockDom(this.dataset.domain)">Block Domain</button>
+               <button class="btn btn-sm" data-domain="${esc(c.remote_host)}" onclick="unblockDom(this.dataset.domain)">Unblock</button>
+             </div></td></tr>`
+            ).join('');
+          } else {
+            netTb.innerHTML = emptyRow(5, 'globe', 'No AI network traffic', 'Connections to AI endpoints will appear here.');
+          }
+        }
+
+        renderEvents(data.recent_events || [], 'eventTable', 8);
+        if (document.getElementById('eventTableFull')) {
+          renderEvents(data.recent_events || [], 'eventTableFull', null);
+        }
+
+        const folderTb = document.getElementById('folderTable');
+        if (folderTb) {
+          if (data.protected_folders?.length) {
+            folderTb.innerHTML = data.protected_folders.map(f =>
+            `<tr><td>${esc(f.name)}</td><td style="font-family:monospace;font-size:0.78rem">${esc(f.path)}</td>
+             <td>${tag(f.policy, f.policy)}</td>
+             <td><select class="policy-select" data-folder="${esc(f.name)}" onchange="setFolderPolicy(this.dataset.folder, this.value)">
+               <option value="allow" ${f.policy==='allow'?'selected':''}>allow</option>
+               <option value="ask" ${f.policy==='ask'?'selected':''}>ask</option>
+               <option value="block" ${f.policy==='block'?'selected':''}>block</option>
+             </select></td>
+             <td><button class="btn btn-danger btn-sm" data-folder="${esc(f.name)}" onclick="removeFolder(this.dataset.folder)">Remove</button></td></tr>`
+            ).join('');
+          } else {
+            folderTb.innerHTML = emptyRow(5, 'folder', 'No protected folders', 'Add a folder above or they will load from config on service start.');
+          }
+        }
+      } catch(e) {
+        console.error(e);
+        const sidebar = document.getElementById('sidebarStatus');
+        const dot = document.getElementById('healthDot');
+        const badge = document.getElementById('statusBadge');
+        if (sidebar) sidebar.textContent = 'Connection failed';
+        if (dot) dot.style.background = 'var(--red)';
+        if (badge) {
+          badge.textContent = 'Offline';
+          badge.className = 'status-badge status-inactive';
+        }
+      } finally {
+        _refreshInFlight = false;
+        if (manual) setLoading(false);
+      }
+    }
+
+    async function pollHealth() {
+      const res = await fetchJson('/api/health', {}, 3000);
+      const up = res.ok && res.data?.ok;
+      document.getElementById('sidebarStatus').textContent = up ? 'Firewall Active' : 'Offline';
+      document.getElementById('healthDot').style.background = up ? 'var(--green)' : 'var(--red)';
+      document.getElementById('statusBadge').textContent = up ? 'Active' : 'Offline';
+      document.getElementById('statusBadge').className = 'status-badge ' + (up ? 'status-active' : 'status-inactive');
+    }
+
+    function startPollers() {
+      clearInterval(_healthTimer);
+      clearInterval(_dataTimer);
+      _healthTimer = setInterval(pollHealth, 8000);
+      _dataTimer = setInterval(() => {
+        if (document.hidden || _actionInFlight > 0) return;
+        refresh(false);
+      }, 20000);
+    }
+
+    function boot() {
+      if (location.protocol === 'file:') {
+        document.getElementById('fileWarn')?.classList.add('visible');
+        return;
+      }
+      document.querySelector('.sidebar')?.addEventListener('click', (e) => {
+        const btn = e.target.closest('.nav-item[data-page]');
+        if (btn) { e.preventDefault(); navigate(btn.dataset.page); }
+      });
+      document.getElementById('refreshBtn')?.addEventListener('click', () => refresh(true));
+      const hash = location.hash?.slice(1);
+      if (hash) navigate(hash);
+      refresh();
+      pollHealth();
+      startPollers();
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) pollHealth();
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', boot);
+    } else {
+      boot();
+    }
+
+    Object.assign(window, {
+      navigate, act, confirmAct, setPolicy, setPolicySeg, refresh,
+      blockApp, askApp, allowApp, stopProc, blockConn, blockDom, unblockDom,
+      setFolderPolicy, removeFolder, removeAppPolicy, approveReq, addFolder,
+      exportAudit, loadAuditLog, scanExtensions, scanModels,
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+c:\Users\aslan\OneDrive\Desktop\firewall\csharp\AiShield.Core\bin\Release\net8.0-windows\AiShield.Core.deps.json
+c:\Users\aslan\OneDrive\Desktop\firewall\csharp\AiShield.Core\bin\Release\net8.0-windows\AiShield.Core.dll
+c:\Users\aslan\OneDrive\Desktop\firewall\csharp\AiShield.Core\bin\Release\net8.0-windows\AiShield.Core.pdb
+c:\Users\aslan\OneDrive\Desktop\firewall\csharp\AiShield.Core\obj\Release\net8.0-windows\AiShield.Core.csproj.AssemblyReference.cache
+c:\Users\aslan\OneDrive\Desktop\firewall\csharp\AiShield.Core\obj\Release\net8.0-windows\AiShield.Core.GeneratedMSBuildEditorConfig.editorconfig
+c:\Users\aslan\OneDrive\Desktop\firewall\csharp\AiShield.Core\obj\Release\net8.0-windows\AiShield.Core.AssemblyInfoInputs.cache
+c:\Users\aslan\OneDrive\Desktop\firewall\csharp\AiShield.Core\obj\Release\net8.0-windows\AiShield.Core.AssemblyInfo.cs
+c:\Users\aslan\OneDrive\Desktop\firewall\csharp\AiShield.Core\obj\Release\net8.0-windows\AiShield.Core.csproj.CoreCompileInputs.cache
+c:\Users\aslan\OneDrive\Desktop\firewall\csharp\AiShield.Core\obj\Release\net8.0-windows\AiShield.Core.dll
+c:\Users\aslan\OneDrive\Desktop\firewall\csharp\AiShield.Core\obj\Release\net8.0-windows\refint\AiShield.Core.dll
+c:\Users\aslan\OneDrive\Desktop\firewall\csharp\AiShield.Core\obj\Release\net8.0-windows\AiShield.Core.pdb
+c:\Users\aslan\OneDrive\Desktop\firewall\csharp\AiShield.Core\obj\Release\net8.0-windows\ref\AiShield.Core.dll

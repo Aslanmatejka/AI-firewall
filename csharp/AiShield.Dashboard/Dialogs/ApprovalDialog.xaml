@@ -1,0 +1,50 @@
+<Window x:Class="AiShield.Dashboard.Dialogs.ApprovalDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="AI Firewall — Access Request" Height="340" Width="460"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
+        Background="{StaticResource BgPrimaryBrush}"
+        FontFamily="Segoe UI Variable, Segoe UI">
+    <Border Margin="24" CornerRadius="16" Padding="28"
+            Background="{StaticResource BgSecondaryBrush}"
+            BorderBrush="{StaticResource WarningBrush}" BorderThickness="1">
+        <StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                <Border Width="48" Height="48" CornerRadius="14"
+                        Background="{StaticResource WarningSubtleBrush}">
+                    <TextBlock Text="{StaticResource IconWarning}" Style="{StaticResource IconLg}"
+                               Foreground="{StaticResource WarningBrush}"/>
+                </Border>
+                <StackPanel Margin="16,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="AI Access Request" Style="{StaticResource Heading2}"/>
+                    <TextBlock Text="Review before allowing access"
+                               Style="{StaticResource CaptionText}"/>
+                </StackPanel>
+            </StackPanel>
+
+            <Border Background="{StaticResource BgElevatedBrush}" CornerRadius="12" Padding="16" Margin="0,0,0,24">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource CaptionText}" Text="APPLICATION"/>
+                    <TextBlock x:Name="AppText" FontSize="15" FontWeight="SemiBold"
+                               Foreground="{StaticResource TextPrimaryBrush}" Margin="0,4,0,14"/>
+                    <TextBlock Style="{StaticResource CaptionText}" Text="RESOURCE"/>
+                    <TextBlock x:Name="ResourceText" FontSize="13"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               TextWrapping="Wrap" Margin="0,4,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" Content="Deny Access" Style="{StaticResource DangerButton}"
+                        Click="Deny_Click" Height="44"/>
+                <Button Grid.Column="2" Content="Allow Access" Style="{StaticResource PrimaryButton}"
+                        Click="Allow_Click" Height="44"/>
+            </Grid>
+        </StackPanel>
+    </Border>
+</Window>

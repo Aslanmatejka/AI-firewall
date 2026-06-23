@@ -1,0 +1,20 @@
+[package]
+name = "aishield-native"
+version = "0.1.0"
+edition = "2021"
+description = "Native hooks for AI Firewall — clipboard, screenshot exclusion, WFP"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+windows = { version = "0.58", features = [
+    "Win32_Foundation",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_System_LibraryLoader",
+    "Win32_Graphics_Gdi",
+    "Win32_Security",
+] }
+
+[build-dependencies]
+windows-bindgen = "0.58"

@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "global_policy": "ask",
+  "network_policy": "block",
+  "clipboard_policy": "ask",
+  "screenshot_policy": "block",
+  "microphone_policy": "block",
+  "camera_policy": "block",
+  "fail_closed": true,
+  "app_policies": {
+    "Cursor": {
+      "default": "ask",
+      "network": "allow",
+      "files": "ask",
+      "clipboard": "ask",
+      "microphone": "block",
+      "camera": "block"
+    },
+    "Ollama": {
+      "default": "ask",
+      "network": "block",
+      "files": "ask",
+      "microphone": "block",
+      "camera": "block"
+    }
+  }
+}

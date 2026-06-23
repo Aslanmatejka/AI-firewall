@@ -1,0 +1,1058 @@
+<Window x:Class="AiShield.Dashboard.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:AiShield.Dashboard.ViewModels"
+        xmlns:conv="clr-namespace:AiShield.Dashboard.Converters"
+        Title="AI Firewall" Height="820" Width="1240" MinHeight="680" MinWidth="1000"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource BgPrimaryBrush}"
+        FontFamily="Segoe UI Variable, Segoe UI, Arial">
+
+    <Window.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolVis"/>
+        <conv:InverseBoolConverter x:Key="InverseBool"/>
+        <conv:SeverityToBrushConverter x:Key="SeverityBrush"/>
+        <conv:PolicyToBrushConverter x:Key="PolicyBrush"/>
+        <conv:GpuDisplayConverter x:Key="GpuDisplay"/>
+        <conv:TimeAgoConverter x:Key="TimeAgo"/>
+        <conv:IntToBoolConverter x:Key="IntToBool"/>
+        <conv:CountToVisibilityConverter x:Key="CountVis"/>
+        <conv:ConfidenceToColorConverter x:Key="ConfColor"/>
+        <conv:HealthToColorConverter x:Key="HealthColor"/>
+        <conv:ZeroToVisibilityConverter x:Key="ZeroVis"/>
+        <conv:PositiveToVisibilityConverter x:Key="PositiveVis"/>
+        <vm:MainViewModel x:Key="Vm"/>
+    </Window.Resources>
+
+    <Window.DataContext>
+        <StaticResource ResourceKey="Vm"/>
+    </Window.DataContext>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="252"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Ambient background glow -->
+        <Grid Grid.ColumnSpan="2" IsHitTestVisible="False">
+            <Ellipse Width="500" Height="500" HorizontalAlignment="Left" VerticalAlignment="Top"
+                     Margin="-120,-180,0,0" Opacity="0.18">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="#FF006E" Offset="0"/>
+                        <GradientStop Color="#00000000" Offset="1"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+            <Ellipse Width="420" Height="420" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                     Margin="0,0,-80,-80" Opacity="0.16">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="#00F5FF" Offset="0"/>
+                        <GradientStop Color="#00000000" Offset="1"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+        </Grid>
+
+        <!-- Sidebar -->
+        <Border Grid.Column="0" Background="{StaticResource SidebarGradient}"
+                BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0">
+            <DockPanel>
+                <!-- Brand -->
+                <StackPanel DockPanel.Dock="Top" Margin="20,26,20,24">
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="44" Height="44" CornerRadius="12" Padding="2">
+                            <Border.Background>
+                                <StaticResource ResourceKey="AccentGradient"/>
+                            </Border.Background>
+                            <Border Background="{StaticResource BgSecondaryBrush}" CornerRadius="10">
+                                <TextBlock Text="{StaticResource IconShield}" Style="{StaticResource IconMd}"
+                                           Foreground="{StaticResource AccentBrush}"/>
+                            </Border>
+                        </Border>
+                        <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="AI Firewall" FontSize="19" FontWeight="Bold"
+                                       Foreground="{StaticResource TextPrimaryBrush}"/>
+                            <TextBlock Text="Privacy Control" FontSize="11"
+                                       Foreground="{StaticResource TextMutedBrush}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Firewall health -->
+                <Border DockPanel.Dock="Top" Margin="16,0,16,18" CornerRadius="12" Padding="14"
+                        Background="{StaticResource BgElevatedBrush}"
+                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <StackPanel>
+                        <Grid>
+                            <TextBlock Text="FIREWALL HEALTH" Style="{StaticResource CaptionText}"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <Ellipse x:Name="StatusDot" Width="7" Height="7" Margin="0,0,6,0" VerticalAlignment="Center">
+                                    <Ellipse.Style>
+                                        <Style TargetType="Ellipse">
+                                            <Setter Property="Fill" Value="{StaticResource DangerBrush}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                                    <Setter Property="Fill" Value="{StaticResource SuccessBrush}"/>
+                                                    <DataTrigger.EnterActions>
+                                                        <BeginStoryboard Storyboard="{StaticResource PulseStoryboard}"/>
+                                                    </DataTrigger.EnterActions>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Ellipse.Style>
+                                </Ellipse>
+                                <TextBlock Text="{Binding ConnectionStatus}" FontSize="11"
+                                           Foreground="{StaticResource TextSecondaryBrush}"/>
+                            </StackPanel>
+                        </Grid>
+                        <Grid Margin="0,10,0,4">
+                            <ProgressBar Value="{Binding ShieldHealthPercent}" Maximum="100" Height="6"
+                                         Background="{StaticResource BgHoverBrush}" BorderThickness="0">
+                                <ProgressBar.Foreground>
+                                    <Binding Path="ShieldHealthPercent" Converter="{StaticResource HealthColor}"/>
+                                </ProgressBar.Foreground>
+                            </ProgressBar>
+                        </Grid>
+                        <Grid>
+                            <TextBlock Text="{Binding ShieldHealthPercent, StringFormat={}{0}% protected}"
+                                       FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"/>
+                            <TextBlock Text="{Binding LastUpdated, StringFormat=Updated {0}}"
+                                       FontSize="10" Foreground="{StaticResource TextMutedBrush}"
+                                       HorizontalAlignment="Right"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Nav -->
+                <StackPanel Margin="6,0,6,0">
+                    <TextBlock Text="HOME" Style="{StaticResource CaptionText}" Margin="16,0,0,8"/>
+                    <RadioButton Style="{StaticResource NavButton}" Tag="{StaticResource IconHome}" Content="Home"
+                                 IsChecked="{Binding SelectedPage, Converter={StaticResource IntToBool}, ConverterParameter=0}"/>
+                    <RadioButton Style="{StaticResource NavButton}" Tag="{StaticResource IconDashboard}" Content="Dashboard"
+                                 IsChecked="{Binding SelectedPage, Converter={StaticResource IntToBool}, ConverterParameter=1}"/>
+                    <RadioButton Style="{StaticResource NavButton}" Tag="{StaticResource IconDocs}" Content="Documentation"
+                                 IsChecked="{Binding SelectedPage, Converter={StaticResource IntToBool}, ConverterParameter=2}"/>
+                    <TextBlock Text="MONITOR" Style="{StaticResource CaptionText}" Margin="16,14,0,8"/>
+                    <RadioButton Style="{StaticResource NavButton}" Tag="{StaticResource IconRobot}" Content="AI Processes"
+                                 IsChecked="{Binding SelectedPage, Converter={StaticResource IntToBool}, ConverterParameter=3}"/>
+                    <RadioButton Style="{StaticResource NavButton}" Tag="{StaticResource IconGlobe}" Content="Network"
+                                 IsChecked="{Binding SelectedPage, Converter={StaticResource IntToBool}, ConverterParameter=4}"/>
+                    <TextBlock Text="PROTECT" Style="{StaticResource CaptionText}" Margin="16,14,0,8"/>
+                    <RadioButton Style="{StaticResource NavButton}" Tag="{StaticResource IconFolder}" Content="Protected Files"
+                                 IsChecked="{Binding SelectedPage, Converter={StaticResource IntToBool}, ConverterParameter=5}"/>
+                    <RadioButton Style="{StaticResource NavButton}" Tag="{StaticResource IconList}" Content="Activity Log"
+                                 IsChecked="{Binding SelectedPage, Converter={StaticResource IntToBool}, ConverterParameter=6}"/>
+                    <RadioButton Style="{StaticResource NavButton}" Tag="{StaticResource IconSettings}" Content="Settings"
+                                 IsChecked="{Binding SelectedPage, Converter={StaticResource IntToBool}, ConverterParameter=7}"/>
+                </StackPanel>
+
+                <!-- Pending alert -->
+                <Border DockPanel.Dock="Bottom" Margin="16,0,16,12" CornerRadius="12" Padding="14"
+                        Background="{StaticResource WarningSubtleBrush}"
+                        BorderBrush="{StaticResource WarningBrush}" BorderThickness="1"
+                        Visibility="{Binding HasPending, Converter={StaticResource BoolVis}}"
+                        Cursor="Hand">
+                    <Border.InputBindings>
+                        <MouseBinding MouseAction="LeftClick"
+                                      Command="{Binding NavigateCommand}" CommandParameter="1"/>
+                    </Border.InputBindings>
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{StaticResource IconLightning}" Style="{StaticResource IconXs}"
+                                       Foreground="{StaticResource WarningBrush}" Margin="0,0,6,0"/>
+                            <TextBlock Text="Pending Requests" FontWeight="SemiBold" FontSize="12"
+                                       Foreground="{StaticResource WarningBrush}"/>
+                        </StackPanel>
+                        <TextBlock Text="{Binding PendingCount, StringFormat={}{0} awaiting your decision}"
+                                   FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <TextBlock DockPanel.Dock="Bottom" Text="v0.2.0" Style="{StaticResource CaptionText}"
+                           HorizontalAlignment="Center" Margin="0,0,0,16"/>
+            </DockPanel>
+        </Border>
+
+        <!-- Main -->
+        <Grid Grid.Column="1" Margin="32,28,32,28">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Grid Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="{Binding PageTitle}" Style="{StaticResource Heading1}"/>
+                    <TextBlock Text="{Binding PageSubtitle}" Style="{StaticResource BodyText}" Margin="0,6,0,0"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+                    <Button Style="{StaticResource GhostButton}" Command="{Binding RefreshCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock x:Name="RefreshIcon" Text="{StaticResource IconRefresh}"
+                                       Margin="0,0,6,0" VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource IconSm}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsRefreshing}" Value="True">
+                                                <DataTrigger.EnterActions>
+                                                    <BeginStoryboard Storyboard="{StaticResource SpinStoryboard}"/>
+                                                </DataTrigger.EnterActions>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                        <Setter Property="RenderTransform">
+                                            <Setter.Value>
+                                                <RotateTransform CenterX="6" CenterY="8"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <TextBlock Text="Refresh" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- Pending requests banner -->
+            <Border Grid.Row="1" Margin="0,0,0,16" CornerRadius="12" Padding="16"
+                    Background="{StaticResource BgElevatedBrush}"
+                    BorderBrush="{StaticResource WarningBrush}" BorderThickness="1"
+                    Visibility="{Binding HasPending, Converter={StaticResource BoolVis}}">
+                <ItemsControl ItemsSource="{Binding PendingRequests}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}">
+                                        <Run Text="{Binding AppName}"/>
+                                        <Run Text=" wants " Foreground="{StaticResource TextMutedBrush}"/>
+                                        <Run Text="{Binding ResourceType}"/>
+                                    </TextBlock>
+                                    <TextBlock Text="{Binding ResourcePath}" FontSize="11"
+                                               Foreground="{StaticResource TextMutedBrush}"
+                                               TextTrimming="CharacterEllipsis" MaxWidth="600"/>
+                                </StackPanel>
+                                <Button Grid.Column="1" Content="Allow" Style="{StaticResource SuccessButton}"
+                                        Margin="0,0,8,0" Padding="14,6"
+                                        Command="{Binding DataContext.ApproveCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        CommandParameter="{Binding Id}"/>
+                                <Button Grid.Column="2" Content="Deny" Style="{StaticResource DangerButton}"
+                                        Padding="14,6"
+                                        Command="{Binding DataContext.DenyCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        CommandParameter="{Binding Id}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Border>
+
+            <ScrollViewer x:Name="PageContent" Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                <Grid>
+                    <!-- HERO -->
+                    <StackPanel>
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedPage}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <Grid>
+                            <TextBlock Text="{StaticResource IconShield}"
+                                       FontFamily="{StaticResource IconFont}"
+                                       FontSize="440"
+                                       Opacity="0.07"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Top"
+                                       Margin="0,20,0,0"
+                                       Foreground="{StaticResource AccentBrush}"
+                                       IsHitTestVisible="False"
+                                       RenderTransformOrigin="0.5,0.5">
+                                <TextBlock.RenderTransform>
+                                    <RotateTransform Angle="-10"/>
+                                </TextBlock.RenderTransform>
+                                <TextBlock.Effect>
+                                    <DropShadowEffect Color="#00F5FF" BlurRadius="70" ShadowDepth="0" Opacity="0.35"/>
+                                </TextBlock.Effect>
+                            </TextBlock>
+                            <StackPanel>
+                        <Border CornerRadius="16" Padding="48,40" Margin="0,0,0,24"
+                                Background="{StaticResource BgSecondaryBrush}"
+                                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                                ClipToBounds="True">
+                            <Grid>
+                                <TextBlock Text="{StaticResource IconShield}"
+                                           FontFamily="{StaticResource IconFont}"
+                                           FontSize="360"
+                                           Opacity="0.06"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Foreground="{StaticResource AccentBrush}"
+                                           IsHitTestVisible="False"
+                                           RenderTransformOrigin="0.5,0.5">
+                                    <TextBlock.RenderTransform>
+                                        <RotateTransform Angle="-8"/>
+                                    </TextBlock.RenderTransform>
+                                </TextBlock>
+                            <StackPanel HorizontalAlignment="Center" MaxWidth="620">
+                                <Border Background="{StaticResource AccentSubtleBrush}" CornerRadius="999"
+                                        Padding="12,6" HorizontalAlignment="Center" Margin="0,0,0,20">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{StaticResource IconShield}" Style="{StaticResource IconSm}"
+                                                   Foreground="{StaticResource AccentBrush}" Margin="0,0,8,0"/>
+                                        <TextBlock Text="Privacy-first AI control" FontSize="12"
+                                                   Foreground="{StaticResource AccentBrush}" FontWeight="SemiBold"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                <TextBlock Text="Control What AI Can Access" FontSize="32" FontWeight="Bold"
+                                           TextAlignment="Center" Margin="0,0,0,12">
+                                    <TextBlock.Foreground>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                            <GradientStop Color="#FFFFFF" Offset="0"/>
+                                            <GradientStop Color="#00F5FF" Offset="0.4"/>
+                                            <GradientStop Color="#FF006E" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </TextBlock.Foreground>
+                                </TextBlock>
+                                <TextBlock Text="AI Firewall sits between AI applications and your OS — letting you decide what files, network traffic, clipboard, and devices AI tools can reach."
+                                           Style="{StaticResource BodyText}" TextAlignment="Center" TextWrapping="Wrap"
+                                           Margin="0,0,0,28"/>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <Button Content="Open Dashboard" Style="{StaticResource PrimaryButton}"
+                                            Command="{Binding NavigateCommand}" CommandParameter="1"
+                                            Padding="20,12" Margin="0,0,10,0"/>
+                                    <Button Content="How it works" Style="{StaticResource GhostButton}"
+                                            Command="{Binding NavigateCommand}" CommandParameter="2"
+                                            Padding="20,12"/>
+                                </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                        <UniformGrid Columns="4" Margin="0,0,0,24">
+                            <Border Style="{StaticResource Card}" Margin="0,0,6,0">
+                                <StackPanel><TextBlock Text="AI PROCESSES" Style="{StaticResource CaptionText}"/>
+                                    <TextBlock Text="{Binding AiCount}" Style="{StaticResource StatValue}" Foreground="{StaticResource StatCyanBrush}"/></StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource Card}" Margin="3,0,3,0">
+                                <StackPanel><TextBlock Text="AI TRAFFIC" Style="{StaticResource CaptionText}"/>
+                                    <TextBlock Text="{Binding NetCount}" Style="{StaticResource StatValue}" Foreground="{StaticResource StatVioletBrush}"/></StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource Card}" Margin="3,0,3,0">
+                                <StackPanel><TextBlock Text="BLOCKED" Style="{StaticResource CaptionText}"/>
+                                    <TextBlock Text="{Binding BlockedCount}" Style="{StaticResource StatValue}" Foreground="{StaticResource StatRoseBrush}"/></StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource Card}" Margin="6,0,0,0">
+                                <StackPanel><TextBlock Text="PROTECTED" Style="{StaticResource CaptionText}"/>
+                                    <TextBlock Text="{Binding FolderCount}" Style="{StaticResource StatValue}" Foreground="{StaticResource StatEmeraldBrush}"/></StackPanel>
+                            </Border>
+                        </UniformGrid>
+                        <UniformGrid Columns="2" Margin="0,0,0,8">
+                            <Border Style="{StaticResource Card}" Margin="0,0,6,0" Padding="20">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                        <TextBlock Text="{StaticResource IconView}" Style="{StaticResource IconSm}"
+                                                   Foreground="{StaticResource AccentBrush}" Margin="0,0,8,0"/>
+                                        <TextBlock Text="Process Monitor" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                    </StackPanel>
+                                    <TextBlock Text="Detects ChatGPT, Ollama, Cursor, and 14+ AI tools." Style="{StaticResource BodyText}"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource Card}" Margin="6,0,0,0" Padding="20">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                        <TextBlock Text="{StaticResource IconNetwork}" Style="{StaticResource IconSm}"
+                                                   Foreground="{StaticResource StatVioletBrush}" Margin="0,0,8,0"/>
+                                        <TextBlock Text="Network Firewall" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                    </StackPanel>
+                                    <TextBlock Text="Monitors traffic to OpenAI, Anthropic, Gemini, and more." Style="{StaticResource BodyText}"/>
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- DOCS -->
+                    <StackPanel>
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedPage}" Value="2">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <Border Style="{StaticResource Card}" Margin="0,0,0,16" Padding="24">
+                            <StackPanel>
+                                <TextBlock Text="Getting Started" Style="{StaticResource Heading2}" Margin="0,0,0,10"/>
+                                <TextBlock Style="{StaticResource BodyText}" TextWrapping="Wrap" Margin="0,0,0,8"
+                                           Text="Start the service: python -m aishield  ·  Launch desktop UI: .\scripts\launch-dashboard.ps1  ·  Web: http://127.0.0.1:9470"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Card}" Margin="0,0,0,16" Padding="24">
+                            <StackPanel>
+                                <TextBlock Text="Policies" Style="{StaticResource Heading2}" Margin="0,0,0,10"/>
+                                <TextBlock Style="{StaticResource BodyText}" TextWrapping="Wrap" Margin="0,0,0,6"
+                                           Text="allow — access granted automatically, logged to audit trail"/>
+                                <TextBlock Style="{StaticResource BodyText}" TextWrapping="Wrap" Margin="0,0,0,6"
+                                           Text="ask — prompts you with Allow / Deny before access proceeds"/>
+                                <TextBlock Style="{StaticResource BodyText}" TextWrapping="Wrap"
+                                           Text="block — access denied immediately, no prompt shown"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Card}" Margin="0,0,0,16" Padding="24">
+                            <StackPanel>
+                                <TextBlock Text="User Actions" Style="{StaticResource Heading2}" Margin="0,0,0,10"/>
+                                <TextBlock Style="{StaticResource BodyText}" TextWrapping="Wrap" Margin="0,0,0,6"
+                                           Text="• Block / Allow / Stop — control AI processes from the AI Processes page"/>
+                                <TextBlock Style="{StaticResource BodyText}" TextWrapping="Wrap" Margin="0,0,0,6"
+                                           Text="• Block Domain / Block All — firewall rules for AI providers"/>
+                                <TextBlock Style="{StaticResource BodyText}" TextWrapping="Wrap" Margin="0,0,0,6"
+                                           Text="• Folder policy dropdown — set allow/ask/block per protected folder"/>
+                                <TextBlock Style="{StaticResource BodyText}" TextWrapping="Wrap"
+                                           Text="• + Add Folder — pick any directory to protect (desktop app)"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Card}" Padding="24">
+                            <StackPanel>
+                                <TextBlock Text="Administrator Mode" Style="{StaticResource Heading2}" Margin="0,0,0,10"/>
+                                <TextBlock Style="{StaticResource BodyText}" TextWrapping="Wrap"
+                                           Text="Firewall rules, hosts file blocking, and process termination require running AI Firewall as Administrator."/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- DASHBOARD -->
+                    <StackPanel>
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedPage}" Value="1">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+
+                        <UniformGrid Columns="4" Margin="0,0,0,22">
+                            <Button Style="{StaticResource StatCardButton}" Margin="0,0,8,0"
+                                    Background="{StaticResource StatCyanBgBrush}"
+                                    BorderBrush="{StaticResource StatCyanBrush}"
+                                    Command="{Binding NavigateCommand}" CommandParameter="3">
+                                <StackPanel HorizontalAlignment="Left">
+                                    <TextBlock Text="{StaticResource IconRobot}" Style="{StaticResource IconLg}"
+                                               Foreground="{StaticResource StatCyanBrush}" Margin="0,0,0,8"/>
+                                    <TextBlock Text="AI PROCESSES" Style="{StaticResource CaptionText}"/>
+                                    <TextBlock Text="{Binding AiCount}" Style="{StaticResource StatValue}"
+                                               Foreground="{StaticResource StatCyanBrush}" Margin="0,2,0,0"/>
+                                    <TextBlock Text="Click to inspect →" FontSize="10"
+                                               Foreground="{StaticResource TextMutedBrush}" Margin="0,6,0,0"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource StatCardButton}" Margin="4,0,4,0"
+                                    Background="{StaticResource StatVioletBgBrush}"
+                                    BorderBrush="{StaticResource StatVioletBrush}"
+                                    Command="{Binding NavigateCommand}" CommandParameter="4">
+                                <StackPanel HorizontalAlignment="Left">
+                                    <TextBlock Text="{StaticResource IconGlobe}" Style="{StaticResource IconLg}"
+                                               Foreground="{StaticResource StatVioletBrush}" Margin="0,0,0,8"/>
+                                    <TextBlock Text="AI TRAFFIC" Style="{StaticResource CaptionText}"/>
+                                    <TextBlock Text="{Binding NetCount}" Style="{StaticResource StatValue}"
+                                               Foreground="{StaticResource StatVioletBrush}" Margin="0,2,0,0"/>
+                                    <TextBlock Text="Click to inspect →" FontSize="10"
+                                               Foreground="{StaticResource TextMutedBrush}" Margin="0,6,0,0"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource StatCardButton}" Margin="4,0,4,0"
+                                    Background="{StaticResource StatRoseBgBrush}"
+                                    BorderBrush="{StaticResource StatRoseBrush}"
+                                    Command="{Binding NavigateCommand}" CommandParameter="6">
+                                <StackPanel HorizontalAlignment="Left">
+                                    <TextBlock Text="{StaticResource IconBlock}" Style="{StaticResource IconLg}"
+                                               Foreground="{StaticResource StatRoseBrush}" Margin="0,0,0,8"/>
+                                    <TextBlock Text="BLOCKED" Style="{StaticResource CaptionText}"/>
+                                    <TextBlock Text="{Binding BlockedCount}" Style="{StaticResource StatValue}"
+                                               Foreground="{StaticResource StatRoseBrush}" Margin="0,2,0,0"/>
+                                    <TextBlock Text="View activity log →" FontSize="10"
+                                               Foreground="{StaticResource TextMutedBrush}" Margin="0,6,0,0"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource StatCardButton}" Margin="8,0,0,0"
+                                    Background="{StaticResource StatEmeraldBgBrush}"
+                                    BorderBrush="{StaticResource StatEmeraldBrush}"
+                                    Command="{Binding NavigateCommand}" CommandParameter="5">
+                                <StackPanel HorizontalAlignment="Left">
+                                    <TextBlock Text="{StaticResource IconFolder}" Style="{StaticResource IconLg}"
+                                               Foreground="{StaticResource StatEmeraldBrush}" Margin="0,0,0,8"/>
+                                    <TextBlock Text="PROTECTED" Style="{StaticResource CaptionText}"/>
+                                    <TextBlock Text="{Binding FolderCount}" Style="{StaticResource StatValue}"
+                                               Foreground="{StaticResource StatEmeraldBrush}" Margin="0,2,0,0"/>
+                                    <TextBlock Text="Manage folders →" FontSize="10"
+                                               Foreground="{StaticResource TextMutedBrush}" Margin="0,6,0,0"/>
+                                </StackPanel>
+                            </Button>
+                        </UniformGrid>
+
+                        <TextBlock Text="Quick Actions" Style="{StaticResource SectionTitle}"/>
+                        <TextBlock Text="Common protections grouped by area. Destructive actions require confirmation."
+                                   Style="{StaticResource SectionDesc}"/>
+                        <UniformGrid Columns="4" Margin="0,0,0,22">
+                            <Border Style="{StaticResource Card}" Margin="0,0,6,0" Padding="16">
+                                <StackPanel>
+                                    <TextBlock Text="NETWORK" Style="{StaticResource CaptionText}" Margin="0,0,0,10"/>
+                                    <Button Style="{StaticResource DangerButton}" Command="{Binding BlockAllAiCommand}"
+                                            Margin="0,0,0,8" Padding="12,8" HorizontalAlignment="Left">
+                                        <TextBlock Text="Block All AI Domains"/>
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource Card}" Margin="3,0,3,0" Padding="16">
+                                <StackPanel>
+                                    <TextBlock Text="EMERGENCY" Style="{StaticResource CaptionText}" Margin="0,0,0,10"/>
+                                    <Button Style="{StaticResource DangerButton}" Command="{Binding LockdownCommand}"
+                                            Margin="0,0,0,8" Padding="12,8" HorizontalAlignment="Left">
+                                        <TextBlock Text="Lockdown Mode"/>
+                                    </Button>
+                                    <Button Style="{StaticResource GhostButton}" Command="{Binding TerminateAllAiCommand}"
+                                            Padding="12,8" HorizontalAlignment="Left">
+                                        <TextBlock Text="Stop All AI"/>
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource Card}" Margin="3,0,3,0" Padding="16">
+                                <StackPanel>
+                                    <TextBlock Text="BROWSER" Style="{StaticResource CaptionText}" Margin="0,0,0,10"/>
+                                    <Button Style="{StaticResource PrimaryButton}" Command="{Binding ScanExtensionsCommand}"
+                                            Margin="0,0,0,8" Padding="12,8" HorizontalAlignment="Left">
+                                        <TextBlock Text="Scan Extensions"/>
+                                    </Button>
+                                    <Button Style="{StaticResource GhostButton}" Command="{Binding BlockWebsitesCommand}"
+                                            Padding="12,8" HorizontalAlignment="Left">
+                                        <TextBlock Text="Block AI Websites"/>
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource Card}" Margin="6,0,0,0" Padding="16">
+                                <StackPanel>
+                                    <TextBlock Text="LOCAL AI" Style="{StaticResource CaptionText}" Margin="0,0,0,10"/>
+                                    <Button Style="{StaticResource GhostButton}" Command="{Binding ScanModelsCommand}"
+                                            Margin="0,0,0,8" Padding="12,8" HorizontalAlignment="Left">
+                                        <TextBlock Text="Scan Local Models"/>
+                                    </Button>
+                                    <Button Style="{StaticResource GhostButton}" Command="{Binding NavigateCommand}"
+                                            CommandParameter="3" Padding="12,8" HorizontalAlignment="Left">
+                                        <TextBlock Text="View Processes"/>
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+
+                        <TextBlock Text="Recent Activity" Style="{StaticResource SectionTitle}"/>
+                        <TextBlock Text="Latest access decisions across your system." Style="{StaticResource SectionDesc}"/>
+                        <Border Style="{StaticResource Card}" Padding="0">
+                            <DataGrid ItemsSource="{Binding Events}" MaxHeight="300">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Time" Binding="{Binding Timestamp, Converter={StaticResource TimeAgo}}" Width="90"/>
+                                    <DataGridTextColumn Header="Source" Binding="{Binding SourceApp}" Width="120"/>
+                                    <DataGridTemplateColumn Header="Severity" Width="80">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Border CornerRadius="6" Padding="8,3" HorizontalAlignment="Left"
+                                                        Background="{Binding Severity, Converter={StaticResource SeverityBrush}}">
+                                                    <TextBlock Text="{Binding Severity}" FontSize="10" FontWeight="Bold"
+                                                               Foreground="{StaticResource TextPrimaryBrush}"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="70"/>
+                                    <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- AI PROCESSES -->
+                    <StackPanel>
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedPage}" Value="3">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <Border Style="{StaticResource Card}" Padding="0"
+                                Visibility="{Binding AiCount, Converter={StaticResource PositiveVis}}">
+                            <DataGrid ItemsSource="{Binding AiProcesses}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Process" Binding="{Binding Name}" Width="140"/>
+                                    <DataGridTextColumn Header="AI Type" Binding="{Binding AiType}" Width="130"/>
+                                    <DataGridTextColumn Header="PID" Binding="{Binding Pid}" Width="60"/>
+                                    <DataGridTextColumn Header="GPU" Binding="{Binding GpuMb, Converter={StaticResource GpuDisplay}}" Width="70"/>
+                                    <DataGridTemplateColumn Header="Confidence" Width="130">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <ProgressBar Value="{Binding Confidence}" Maximum="100" Height="5"
+                                                                 Background="{StaticResource BgHoverBrush}" BorderThickness="0">
+                                                        <ProgressBar.Foreground>
+                                                            <Binding Path="Confidence" Converter="{StaticResource ConfColor}"/>
+                                                        </ProgressBar.Foreground>
+                                                    </ProgressBar>
+                                                    <TextBlock Text="{Binding Confidence, StringFormat={}{0}%}"
+                                                               FontSize="10" Margin="0,3,0,0"
+                                                               Foreground="{StaticResource TextMutedBrush}"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn Header="Path" Binding="{Binding Exe}" Width="*"/>
+                                    <DataGridTemplateColumn Header="Actions" Width="260">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Button Content="Block" Style="{StaticResource ActionButtonDanger}" Margin="0,0,4,0"
+                                                            Command="{Binding DataContext.BlockAppCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding AiType}"/>
+                                                    <Button Content="Ask" Style="{StaticResource ActionButton}" Margin="0,0,4,0"
+                                                            Command="{Binding DataContext.AskAppCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding AiType}"/>
+                                                    <Button Content="Allow" Style="{StaticResource ActionButton}" Margin="0,0,4,0"
+                                                            Command="{Binding DataContext.AllowAppCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding AiType}"/>
+                                                    <Button Content="Stop" Style="{StaticResource ActionButtonDanger}"
+                                                            Command="{Binding DataContext.TerminateProcessCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding Pid}"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Border>
+                        <Border Style="{StaticResource Card}" Padding="40" HorizontalAlignment="Stretch"
+                                Visibility="{Binding AiCount, Converter={StaticResource ZeroVis}}">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="{StaticResource IconCheck}" Style="{StaticResource IconXl}"
+                                           Foreground="{StaticResource SuccessBrush}"
+                                           HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                                <TextBlock Text="No AI processes detected" Style="{StaticResource Heading2}"
+                                           HorizontalAlignment="Center"/>
+                                <TextBlock Text="Your system looks clean. AI Firewall is watching."
+                                           Style="{StaticResource BodyText}" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- NETWORK -->
+                    <StackPanel>
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedPage}" Value="4">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <Border Style="{StaticResource Card}" Padding="0"
+                                Visibility="{Binding NetCount, Converter={StaticResource PositiveVis}}">
+                            <DataGrid ItemsSource="{Binding NetworkConnections}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Process" Binding="{Binding ProcessName}" Width="130"/>
+                                    <DataGridTextColumn Header="Remote Host" Binding="{Binding RemoteHost}" Width="200"/>
+                                    <DataGridTextColumn Header="Address" Binding="{Binding RemoteAddr}" Width="150"/>
+                                    <DataGridTextColumn Header="Local" Binding="{Binding LocalAddr}" Width="150"/>
+                                    <DataGridTemplateColumn Header="Status" Width="100">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Border CornerRadius="6" Padding="8,3" HorizontalAlignment="Left"
+                                                        Background="{StaticResource StatVioletBgBrush}">
+                                                    <TextBlock Text="AI Traffic" FontSize="10" FontWeight="Bold"
+                                                               Foreground="{StaticResource StatVioletBrush}"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Actions" Width="260">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Button Content="Block" Style="{StaticResource ActionButtonDanger}" Margin="0,0,4,0"
+                                                            Command="{Binding DataContext.BlockConnectionCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding Pid}"/>
+                                                    <Button Content="Block Domain" Style="{StaticResource ActionButton}" Margin="0,0,4,0"
+                                                            Command="{Binding DataContext.BlockDomainCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding RemoteHost}"/>
+                                                    <Button Content="Unblock" Style="{StaticResource ActionButton}"
+                                                            Command="{Binding DataContext.UnblockDomainCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding RemoteHost}"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Border>
+                        <Border Style="{StaticResource Card}" Padding="40"
+                                Visibility="{Binding NetCount, Converter={StaticResource ZeroVis}}">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="{StaticResource IconGlobe}" Style="{StaticResource IconXl}"
+                                           Foreground="{StaticResource StatVioletBrush}"
+                                           HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                                <TextBlock Text="No AI network traffic" Style="{StaticResource Heading2}" HorizontalAlignment="Center"/>
+                                <TextBlock Text="No active connections to AI services right now."
+                                           Style="{StaticResource BodyText}" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- PROTECTED FILES -->
+                    <StackPanel>
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedPage}" Value="5">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <Grid Margin="0,0,0,16">
+                            <TextBlock Text="Set policy per folder or add new protected paths"
+                                       Style="{StaticResource BodyText}" VerticalAlignment="Center"/>
+                            <Button Content="+ Add Folder" Style="{StaticResource PrimaryButton}"
+                                    HorizontalAlignment="Right" Click="AddFolder_Click" Padding="16,8"/>
+                        </Grid>
+                        <ItemsControl ItemsSource="{Binding ProtectedFolders}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,0,0,10" Padding="20">
+                                        <Border.Style>
+                                            <Style TargetType="Border" BasedOn="{StaticResource Card}">
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="BorderBrush" Value="{StaticResource StatEmeraldBrush}"/>
+                                                        <Setter Property="Background" Value="{StaticResource BgElevatedBrush}"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Border Width="40" Height="40" CornerRadius="10"
+                                                    Background="{StaticResource StatEmeraldBgBrush}" Margin="0,0,16,0">
+                                                <TextBlock Text="{StaticResource IconFolder}" Style="{StaticResource IconMd}"
+                                                           Foreground="{StaticResource StatEmeraldBrush}"/>
+                                            </Border>
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold"
+                                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                                <TextBlock Text="{Binding Path}" FontSize="11"
+                                                           Foreground="{StaticResource TextMutedBrush}"
+                                                           FontFamily="Cascadia Code, Consolas" Margin="0,4,0,0"/>
+                                            </StackPanel>
+                                            <Border Grid.Column="2" CornerRadius="8" Padding="4" VerticalAlignment="Center" Margin="0,0,8,0"
+                                                    Background="{StaticResource BgElevatedBrush}">
+                                                <ComboBox Style="{StaticResource PolicyCombo}"
+                                                            Tag="{Binding Name}"
+                                                            SelectionChanged="FolderPolicy_Changed">
+                                                    <ComboBoxItem Content="allow"/>
+                                                    <ComboBoxItem Content="ask"/>
+                                                    <ComboBoxItem Content="block"/>
+                                                </ComboBox>
+                                            </Border>
+                                            <Button Grid.Column="3" Content="Remove" Style="{StaticResource ActionButtonDanger}"
+                                                    VerticalAlignment="Center" Padding="12,6"
+                                                    Command="{Binding DataContext.RemoveFolderCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding Name}"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- ACTIVITY LOG -->
+                    <StackPanel>
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedPage}" Value="6">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <Grid Margin="0,0,0,12">
+                            <TextBlock Text="Full audit trail from the permission database." Style="{StaticResource BodyText}" VerticalAlignment="Center"/>
+                            <Button Content="Export CSV" Style="{StaticResource GhostButton}" HorizontalAlignment="Right"
+                                    Command="{Binding ExportAuditCommand}" Padding="14,8"/>
+                        </Grid>
+                        <Border Style="{StaticResource Card}" Padding="0">
+                            <DataGrid ItemsSource="{Binding AuditLog}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Time" Binding="{Binding Timestamp, Converter={StaticResource TimeAgo}}" Width="90"/>
+                                    <DataGridTextColumn Header="App" Binding="{Binding AppName}" Width="120"/>
+                                    <DataGridTextColumn Header="Type" Binding="{Binding ResourceType}" Width="90"/>
+                                    <DataGridTemplateColumn Header="Decision" Width="90">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Border CornerRadius="6" Padding="8,3" HorizontalAlignment="Left"
+                                                        Background="{Binding Decision, Converter={StaticResource PolicyBrush}}">
+                                                    <TextBlock Text="{Binding Decision}" FontSize="10" FontWeight="Bold"
+                                                               Foreground="{StaticResource TextPrimaryBrush}"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- SETTINGS -->
+                    <StackPanel>
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedPage}" Value="7">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+
+                        <TextBlock Text="Global Policies" Style="{StaticResource Heading2}" Margin="0,0,0,12"/>
+                        <Border Style="{StaticResource Card}" Margin="0,0,0,20">
+                            <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Margin="0,0,12,0">
+                                    <TextBlock Text="Network Traffic" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
+                                    <TextBlock Text="When apps connect to AI services:" Style="{StaticResource BodyText}" Margin="0,0,0,8"/>
+                                    <WrapPanel>
+                                        <Button Content="Allow" Style="{StaticResource ActionButton}" Margin="0,0,6,0"
+                                                Command="{Binding SetGlobalNetworkPolicyCommand}" CommandParameter="allow"/>
+                                        <Button Content="Ask" Style="{StaticResource ActionButton}" Margin="0,0,6,0"
+                                                Command="{Binding SetGlobalNetworkPolicyCommand}" CommandParameter="ask"/>
+                                        <Button Content="Block" Style="{StaticResource ActionButtonDanger}"
+                                                Command="{Binding SetGlobalNetworkPolicyCommand}" CommandParameter="block"/>
+                                    </WrapPanel>
+                                    <TextBlock Text="{Binding NetworkPolicy, StringFormat=Current: {0}}" Style="{StaticResource CaptionText}" Margin="0,8,0,0"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="Clipboard Access" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
+                                    <TextBlock Text="When AI reads your clipboard:" Style="{StaticResource BodyText}" Margin="0,0,0,8"/>
+                                    <WrapPanel>
+                                        <Button Content="Allow" Style="{StaticResource ActionButton}" Margin="0,0,6,0"
+                                                Command="{Binding SetGlobalClipboardPolicyCommand}" CommandParameter="allow"/>
+                                        <Button Content="Ask" Style="{StaticResource ActionButton}" Margin="0,0,6,0"
+                                                Command="{Binding SetGlobalClipboardPolicyCommand}" CommandParameter="ask"/>
+                                        <Button Content="Block" Style="{StaticResource ActionButtonDanger}"
+                                                Command="{Binding SetGlobalClipboardPolicyCommand}" CommandParameter="block"/>
+                                    </WrapPanel>
+                                    <TextBlock Text="{Binding ClipboardPolicy, StringFormat=Current: {0}}" Style="{StaticResource CaptionText}" Margin="0,8,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                            <Grid Margin="0,16,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Margin="0,0,12,0">
+                                    <TextBlock Text="Screenshots" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
+                                    <WrapPanel>
+                                        <Button Content="Allow" Style="{StaticResource ActionButton}" Margin="0,0,6,0"
+                                                Command="{Binding SetGlobalScreenshotPolicyCommand}" CommandParameter="allow"/>
+                                        <Button Content="Ask" Style="{StaticResource ActionButton}" Margin="0,0,6,0"
+                                                Command="{Binding SetGlobalScreenshotPolicyCommand}" CommandParameter="ask"/>
+                                        <Button Content="Block" Style="{StaticResource ActionButtonDanger}"
+                                                Command="{Binding SetGlobalScreenshotPolicyCommand}" CommandParameter="block"/>
+                                    </WrapPanel>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                                    <TextBlock Text="Microphone" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
+                                    <WrapPanel>
+                                        <Button Content="Allow" Style="{StaticResource ActionButton}" Margin="0,0,6,0"
+                                                Command="{Binding SetGlobalMicrophonePolicyCommand}" CommandParameter="allow"/>
+                                        <Button Content="Ask" Style="{StaticResource ActionButton}" Margin="0,0,6,0"
+                                                Command="{Binding SetGlobalMicrophonePolicyCommand}" CommandParameter="ask"/>
+                                        <Button Content="Block" Style="{StaticResource ActionButtonDanger}"
+                                                Command="{Binding SetGlobalMicrophonePolicyCommand}" CommandParameter="block"/>
+                                    </WrapPanel>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Camera" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
+                                    <WrapPanel>
+                                        <Button Content="Allow" Style="{StaticResource ActionButton}" Margin="0,0,6,0"
+                                                Command="{Binding SetGlobalCameraPolicyCommand}" CommandParameter="allow"/>
+                                        <Button Content="Ask" Style="{StaticResource ActionButton}" Margin="0,0,6,0"
+                                                Command="{Binding SetGlobalCameraPolicyCommand}" CommandParameter="ask"/>
+                                        <Button Content="Block" Style="{StaticResource ActionButtonDanger}"
+                                                Command="{Binding SetGlobalCameraPolicyCommand}" CommandParameter="block"/>
+                                    </WrapPanel>
+                                </StackPanel>
+                            </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="App Rules" Style="{StaticResource Heading2}" Margin="0,0,0,12"/>
+                        <Border Style="{StaticResource Card}" Padding="0" Margin="0,0,0,20">
+                            <DataGrid ItemsSource="{Binding AppPolicies}" MaxHeight="220">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="App" Binding="{Binding AppName}" Width="110"/>
+                                    <DataGridTemplateColumn Header="Default" Width="76">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ComboBox Tag="default" Loaded="AppPolicyCombo_Loaded" SelectionChanged="AppPolicy_Changed">
+                                                    <ComboBoxItem Content="allow"/><ComboBoxItem Content="ask"/><ComboBoxItem Content="block"/>
+                                                </ComboBox>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Files" Width="76">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ComboBox Tag="files" Loaded="AppPolicyCombo_Loaded" SelectionChanged="AppPolicy_Changed">
+                                                    <ComboBoxItem Content="allow"/><ComboBoxItem Content="ask"/><ComboBoxItem Content="block"/>
+                                                </ComboBox>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Network" Width="76">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ComboBox Tag="network" Loaded="AppPolicyCombo_Loaded" SelectionChanged="AppPolicy_Changed">
+                                                    <ComboBoxItem Content="allow"/><ComboBoxItem Content="ask"/><ComboBoxItem Content="block"/>
+                                                </ComboBox>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Clipboard" Width="76">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ComboBox Tag="clipboard" Loaded="AppPolicyCombo_Loaded" SelectionChanged="AppPolicy_Changed">
+                                                    <ComboBoxItem Content="allow"/><ComboBoxItem Content="ask"/><ComboBoxItem Content="block"/>
+                                                </ComboBox>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Mic" Width="68">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ComboBox Tag="microphone" Loaded="AppPolicyCombo_Loaded" SelectionChanged="AppPolicy_Changed">
+                                                    <ComboBoxItem Content="allow"/><ComboBoxItem Content="ask"/><ComboBoxItem Content="block"/>
+                                                </ComboBox>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Camera" Width="68">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ComboBox Tag="camera" Loaded="AppPolicyCombo_Loaded" SelectionChanged="AppPolicy_Changed">
+                                                    <ComboBoxItem Content="allow"/><ComboBoxItem Content="ask"/><ComboBoxItem Content="block"/>
+                                                </ComboBox>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="" Width="72">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Content="Remove" Style="{StaticResource ActionButtonDanger}" Padding="6,3"
+                                                        Command="{Binding DataContext.RemoveAppPolicyCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding AppName}"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Border>
+
+                        <TextBlock Text="System Actions" Style="{StaticResource Heading2}" Margin="0,0,0,12"/>
+                        <WrapPanel Margin="0,0,0,20">
+                            <Button Content="Lockdown Mode" Style="{StaticResource DangerButton}"
+                                    Command="{Binding LockdownCommand}" Margin="0,0,8,8" Padding="14,8"/>
+                            <Button Content="Stop All AI" Style="{StaticResource DangerButton}"
+                                    Command="{Binding TerminateAllAiCommand}" Margin="0,0,8,8" Padding="14,8"/>
+                            <Button Content="Restore Defaults" Style="{StaticResource GhostButton}"
+                                    Command="{Binding RestoreDefaultsCommand}" Margin="0,0,8,8" Padding="14,8"/>
+                            <Button Content="Block All AI Domains" Style="{StaticResource DangerButton}"
+                                    Command="{Binding BlockAllAiCommand}" Margin="0,0,8,8" Padding="14,8"/>
+                            <Button Content="Block AI Websites (hosts)" Style="{StaticResource GhostButton}"
+                                    Command="{Binding BlockWebsitesCommand}" Margin="0,0,8,8" Padding="14,8"/>
+                            <Button Content="Scan Extensions" Style="{StaticResource PrimaryButton}"
+                                    Command="{Binding ScanExtensionsCommand}" Margin="0,0,8,8" Padding="14,8"/>
+                            <Button Content="Scan Local Models" Style="{StaticResource GhostButton}"
+                                    Command="{Binding ScanModelsCommand}" Margin="0,0,8,8" Padding="14,8"/>
+                        </WrapPanel>
+
+                        <TextBlock Text="Browser Extensions" Style="{StaticResource Heading2}" Margin="0,0,0,12"/>
+                        <Border Style="{StaticResource Card}" Padding="0" Margin="0,0,0,20">
+                            <DataGrid ItemsSource="{Binding Extensions}" MaxHeight="200">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Browser" Binding="{Binding Browser}" Width="100"/>
+                                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="200"/>
+                                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Border>
+                        <TextBlock Text="Local AI Models" Style="{StaticResource Heading2}" Margin="0,0,0,12"/>
+                        <Border Style="{StaticResource Card}" Padding="0">
+                            <DataGrid ItemsSource="{Binding ModelFiles}" MaxHeight="260">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Path" Binding="{Binding Path}" Width="*"/>
+                                    <DataGridTextColumn Header="Size (MB)" Binding="{Binding SizeMb}" Width="100"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </ScrollViewer>
+
+            <!-- Status toast -->
+            <Border Grid.Row="3" Margin="0,12,0,0" CornerRadius="10" Padding="14,10"
+                    Background="{StaticResource AccentSubtleBrush}"
+                    BorderBrush="{StaticResource AccentBrush}" BorderThickness="1"
+                    Visibility="{Binding HasStatusMessage, Converter={StaticResource BoolVis}}">
+                <TextBlock Text="{Binding StatusMessage}" FontSize="12"
+                           Foreground="{StaticResource AccentBrush}"/>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

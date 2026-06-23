@@ -1,0 +1,516 @@
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781914010756,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781914021964,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:act","message":"button action start","data":{"url":"/api/process/ask","hasBody":true},"hypothesisId":"H1","timestamp":1781914026275,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:act","message":"button action start","data":{"url":"/api/process/ask","hasBody":true},"hypothesisId":"H1","timestamp":1781914027358,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914032442,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:act","message":"button action done","data":{"url":"/api/process/ask","httpOk":false,"apiOk":false,"status":0},"hypothesisId":"H2","timestamp":1781914034288,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:act","message":"button action done","data":{"url":"/api/process/ask","httpOk":false,"apiOk":false,"status":0},"hypothesisId":"H2","timestamp":1781914035367,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914042458,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914052450,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914062447,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914072459,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914082450,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914092464,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781914102144,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914112465,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914122448,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914132461,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914142453,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781914148365,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781914149784,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781914157426,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781914164341,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914172446,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914182453,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781914190242,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781914196098,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781914203496,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781914209668,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914222448,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914232451,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914242456,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914252450,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914262449,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914272452,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914282446,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914292452,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914302454,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914312454,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914322453,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914332450,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914342451,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914352455,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914362456,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914372454,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914382460,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914392444,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914402464,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914412444,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914422465,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914432453,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914442466,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914452444,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914462446,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914472444,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914482445,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914492444,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914502442,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914512441,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914522448,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914532457,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914542459,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914552450,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914562441,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914572444,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914582442,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914592456,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914602452,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914612450,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914622460,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914632452,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914642447,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914652452,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914662439,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914672450,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914682439,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914692443,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914702439,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914712453,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914722452,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914732444,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914742466,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914752454,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914762455,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914772452,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914782448,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914792457,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914802456,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914812446,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914822461,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914832453,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914842450,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914852456,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914862465,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781914864606,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781914869830,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781914876527,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781914880735,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781914884770,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781914890247,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781914894632,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781914900949,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781914904810,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781914914085,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781914920647,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781914928589,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781914929655,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781914939374,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781914941976,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781914952452,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781914959035,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781914959440,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781914965183,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781914969981,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781914977709,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781914981270,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781914985265,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781914989454,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781914996292,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915000967,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915006203,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915010325,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915016080,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915020624,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915031055,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915042447,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915045748,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915049445,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915055662,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915059703,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915067018,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915072022,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915075691,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915079685,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915091723,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915098602,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915102275,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915106310,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915110388,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915120420,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915132449,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915139834,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915152447,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915162464,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915169028,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915169529,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915182450,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915192455,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915198918,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915199449,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915206099,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915210126,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915215226,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915220141,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915224650,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915230560,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915242450,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915251058,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915260235,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915264902,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915269836,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915275440,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915284216,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915286293,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915291276,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915302439,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915312458,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915322454,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915332460,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915342452,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915352442,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915362451,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915372465,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915382464,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915392450,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915402464,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915412438,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915419524,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915427295,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915433359,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915435890,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915445177,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915453353,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915455494,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915462682,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915466187,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915473825,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915480259,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915484453,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915497438,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915507452,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915515916,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915521413,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915524732,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915529783,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915536536,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915540311,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915551448,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915556076,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915566516,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915577451,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915587165,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781915595111,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915607447,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915617451,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915627442,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915637452,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915647446,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915656054,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915667452,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915677463,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915681377,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915692458,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915702446,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915706530,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915717445,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915727446,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915737455,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915747446,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915757449,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915767441,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915777442,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915787443,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915797452,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915807455,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915817451,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915826888,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915835820,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915847441,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915857030,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915867440,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915877452,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915886970,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915897449,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915907463,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915916406,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915921207,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915932461,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915942452,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915952453,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915962445,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915972455,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915975860,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781915983589,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781915992443,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916002453,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916012443,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916022446,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916032458,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916042453,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916052459,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916062458,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916072457,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916082450,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916092440,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916101916,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916112448,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916122453,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916124492,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916137439,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916147466,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916152754,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916156140,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916167450,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916177456,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916182553,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916185378,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916197449,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916207447,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916217450,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916227462,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916237455,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916241207,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916248080,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916257450,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916267455,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916271133,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916282461,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916292463,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916302451,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916312453,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916322444,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916329977,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916342444,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916352450,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916359577,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916372442,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916382454,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916389499,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916395113,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916402597,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916411547,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916421308,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916426623,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916437444,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916447459,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916457452,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916467452,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916477452,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916487452,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916497458,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916507081,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916511673,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916522447,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916532445,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916536735,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916540189,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916545402,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916550895,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916561169,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916567606,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916576954,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916587443,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916594837,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916601995,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916606435,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916611855,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916618778,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916625768,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916630579,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916637093,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916641286,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916645607,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916650830,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916657883,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916664144,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916670247,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916682445,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916687410,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916697438,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916707456,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916717450,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916727454,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916737447,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916747457,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916757437,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916767455,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916772841,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916774574,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916783879,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916788104,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916796971,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916802812,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916804501,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916811341,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916817253,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916826519,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916833596,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916834473,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916841758,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916846359,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916851986,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916862445,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916864443,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916871124,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916876260,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916883625,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916890989,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916894994,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916901085,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916906793,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916917441,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916925546,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916930926,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916935765,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916947440,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916954389,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916954462,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916967447,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916977460,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916983644,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781916984479,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781916997448,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781917007452,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917013214,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917014718,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917020880,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917026192,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917033361,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917037188,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917043565,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781917052438,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781917062447,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781917072448,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781917082450,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781917092452,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917101542,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917105992,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917112841,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917116298,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917124394,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917132349,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917135675,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917142541,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917146498,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917155650,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917163677,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917164710,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917172718,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917177080,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917185020,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917191740,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917195502,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917201946,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917210982,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917221916,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917225317,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917235450,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781917247440,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917251547,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917255761,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917262315,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917267376,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781917277446,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917282144,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917285820,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917293033,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917296251,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917303357,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917311023,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917314441,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917323271,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917327424,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917334420,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917338640,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917343160,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917348359,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917356766,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781917367447,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917373796,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781917382444,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781917392444,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781917402458,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781917412439,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781917422444,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781917432452,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781917442452,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781917452455,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781917462459,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781917472450,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781917482449,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781917492446,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781917502459,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781917512454,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781917522451,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781917532448,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781917542452,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917549232,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917549444,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781917562439,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll failed","data":{"error":"Request timed out — is the service running?"},"hypothesisId":"H2","timestamp":1781917572450,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917580991,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917586740,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917594167,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917594442,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":0},"hypothesisId":"H1","timestamp":1781917601875,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781917605378,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781917609449,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781917615971,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781917620833,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781917627147,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781917629486,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781917636429,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status poll ok","data":{"running":true,"pending":1},"hypothesisId":"H1","timestamp":1781917639521,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:boot","message":"dashboard boot","data":{"build":"1781917641","protocol":"http:","href":"http://127.0.0.1:9470/#dashboard"},"hypothesisId":"H4","timestamp":1781917642274,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:navigate","message":"nav click","data":{"page":"dashboard"},"hypothesisId":"H1","timestamp":1781917642275,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status ok","data":{"active":true,"ai":3,"net":0,"pending":1},"hypothesisId":"H5","timestamp":1781917642675,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:navigate","message":"nav click","data":{"page":"docs"},"hypothesisId":"H1","timestamp":1781917648162,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:navigate","message":"nav click","data":{"page":"docs"},"hypothesisId":"H1","timestamp":1781917648167,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:navigate","message":"nav click","data":{"page":"processes"},"hypothesisId":"H1","timestamp":1781917650333,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:navigate","message":"nav click","data":{"page":"processes"},"hypothesisId":"H1","timestamp":1781917650336,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:navigate","message":"nav click","data":{"page":"network"},"hypothesisId":"H1","timestamp":1781917651566,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:navigate","message":"nav click","data":{"page":"network"},"hypothesisId":"H1","timestamp":1781917651568,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:navigate","message":"nav click","data":{"page":"files"},"hypothesisId":"H1","timestamp":1781917652499,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:navigate","message":"nav click","data":{"page":"files"},"hypothesisId":"H1","timestamp":1781917652502,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:navigate","message":"nav click","data":{"page":"events"},"hypothesisId":"H1","timestamp":1781917654642,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:navigate","message":"nav click","data":{"page":"events"},"hypothesisId":"H1","timestamp":1781917654646,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:navigate","message":"nav click","data":{"page":"settings"},"hypothesisId":"H1","timestamp":1781917655615,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:navigate","message":"nav click","data":{"page":"settings"},"hypothesisId":"H1","timestamp":1781917655619,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:navigate","message":"nav click","data":{"page":"network"},"hypothesisId":"H1","timestamp":1781917658849,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:navigate","message":"nav click","data":{"page":"network"},"hypothesisId":"H1","timestamp":1781917658851,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status ok","data":{"active":true,"ai":3,"net":0,"pending":1},"hypothesisId":"H5","timestamp":1781917663305,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:navigate","message":"nav click","data":{"page":"events"},"hypothesisId":"H1","timestamp":1781917665947,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:navigate","message":"nav click","data":{"page":"events"},"hypothesisId":"H1","timestamp":1781917665951,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status ok","data":{"active":true,"ai":3,"net":0,"pending":1},"hypothesisId":"H5","timestamp":1781917682721,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status ok","data":{"active":true,"ai":3,"net":0,"pending":1},"hypothesisId":"H5","timestamp":1781917703463,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status ok","data":{"active":true,"ai":3,"net":0,"pending":1},"hypothesisId":"H5","timestamp":1781917722352,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status ok","data":{"active":true,"ai":3,"net":0,"pending":1},"hypothesisId":"H5","timestamp":1781917742494,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status ok","data":{"active":true,"ai":3,"net":0,"pending":1},"hypothesisId":"H5","timestamp":1781917762522,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status ok","data":{"active":true,"ai":3,"net":0,"pending":1},"hypothesisId":"H5","timestamp":1781917783307,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status ok","data":{"active":true,"ai":3,"net":0,"pending":1},"hypothesisId":"H5","timestamp":1781917803034,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status ok","data":{"active":true,"ai":3,"net":0,"pending":1},"hypothesisId":"H5","timestamp":1781917823241,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status ok","data":{"active":true,"ai":3,"net":0,"pending":1},"hypothesisId":"H5","timestamp":1781917843043,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status ok","data":{"active":true,"ai":3,"net":0,"pending":0},"hypothesisId":"H5","timestamp":1781917865357,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status failed","data":{"error":"Request timed out — is the service running?","protocol":"http:"},"hypothesisId":"H4","timestamp":1781917897290,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status ok","data":{"active":true,"ai":3,"net":0,"pending":0},"hypothesisId":"H5","timestamp":1781917902842,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status ok","data":{"active":true,"ai":3,"net":0,"pending":0},"hypothesisId":"H5","timestamp":1781917928337,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status ok","data":{"active":true,"ai":3,"net":0,"pending":0},"hypothesisId":"H5","timestamp":1781917948573,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status ok","data":{"active":true,"ai":3,"net":0,"pending":0},"hypothesisId":"H5","timestamp":1781917967539,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status ok","data":{"active":true,"ai":3,"net":0,"pending":0},"hypothesisId":"H5","timestamp":1781917987027,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status failed","data":{"error":"Request timed out — is the service running?","protocol":"http:"},"hypothesisId":"H4","timestamp":1781918017283,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status ok","data":{"active":true,"ai":3,"net":0,"pending":0},"hypothesisId":"H5","timestamp":1781918027403,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status ok","data":{"active":true,"ai":3,"net":0,"pending":0},"hypothesisId":"H5","timestamp":1781918048751,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status failed","data":{"error":"Request timed out — is the service running?","protocol":"http:"},"hypothesisId":"H4","timestamp":1781918077291,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status failed","data":{"error":"Request timed out — is the service running?","protocol":"http:"},"hypothesisId":"H4","timestamp":1781918097284,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status ok","data":{"active":true,"ai":3,"net":0,"pending":0},"hypothesisId":"H5","timestamp":1781918112218,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status failed","data":{"error":"Request timed out — is the service running?","protocol":"http:"},"hypothesisId":"H4","timestamp":1781918137288,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status failed","data":{"error":"Request timed out — is the service running?","protocol":"http:"},"hypothesisId":"H4","timestamp":1781918157288,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status ok","data":{"active":true,"ai":3,"net":0,"pending":0},"hypothesisId":"H5","timestamp":1781918167208,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status ok","data":{"active":true,"ai":0,"net":0,"pending":0},"hypothesisId":"H5","timestamp":1781918192328,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status ok","data":{"active":true,"ai":3,"net":0,"pending":1},"hypothesisId":"H5","timestamp":1781918203450,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status ok","data":{"active":true,"ai":3,"net":0,"pending":1},"hypothesisId":"H5","timestamp":1781918225330,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status ok","data":{"active":true,"ai":3,"net":0,"pending":1},"hypothesisId":"H5","timestamp":1781918242549,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status ok","data":{"active":true,"ai":3,"net":0,"pending":1},"hypothesisId":"H5","timestamp":1781918264537,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status ok","data":{"active":true,"ai":3,"net":0,"pending":0},"hypothesisId":"H5","timestamp":1781918289668,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status failed","data":{"error":"Request timed out — is the service running?","protocol":"http:"},"hypothesisId":"H4","timestamp":1781918317295,"runId":"ui-buttons"}
+{"sessionId":"820335","location":"index.html:refresh","message":"status ok","data":{"active":true,"ai":3,"net":0,"pending":0},"hypothesisId":"H5","timestamp":1781918334170,"runId":"ui-buttons"}

@@ -1,0 +1,44 @@
+;
+; AI Firewall minifilter — Phase 3 scaffold INF
+;
+
+[Version]
+Signature   = "$WINDOWS NT$"
+Class       = "ActivityMonitor"
+ClassGuid   = {b86dff51-a31e-4bac-b3cf-e8cfe75c9fc2}
+Provider    = %ManufacturerName%
+DriverVer   = 06/17/2026,0.1.0.0
+CatalogFile = aishield_minifilter.cat
+PnpLockdown = 1
+
+[DestinationDirs]
+DefaultDestDir = 12
+
+[DefaultInstall.NTamd64]
+CopyFiles = DriverCopyFiles
+
+[DefaultInstall.NTamd64.Services]
+AddService = AiShieldMinifilter,%SPSVCINST_ASSOCSERVICE%,AiShieldMinifilterService
+
+[DriverCopyFiles]
+aishield_minifilter.sys
+
+[AiShieldMinifilterService]
+DisplayName    = %ServiceName%
+ServiceType    = 2
+StartType      = 3
+ErrorControl   = 1
+ServiceBinary  = %12%\aishield_minifilter.sys
+LoadOrderGroup = "FSFilter Activity Monitor"
+
+[SourceDisksNames]
+1 = %DiskName%,,,
+
+[SourceDisksFiles]
+aishield_minifilter.sys = 1
+
+[Strings]
+ManufacturerName = "AI Firewall"
+ServiceName      = "AI Firewall Minifilter"
+DiskName         = "AI Firewall Minifilter Installation Disk"
+SPSVCINST_ASSOCSERVICE = 0x00000002
