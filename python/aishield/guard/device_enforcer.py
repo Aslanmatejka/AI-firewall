@@ -7,7 +7,6 @@ import logging
 import os
 import threading
 import time
-from datetime import datetime, timedelta
 from typing import Any, Callable
 
 import psutil
@@ -47,13 +46,6 @@ class DeviceEnforcer:
         self._seen_cam: set[int] = set()
         self._denied_until: dict[tuple[str, str], float] = {}
         self._deny_cooldown = float(config.get("device_deny_cooldown_seconds", 3600))
-        self._pycaw_ok = False
-        if os.name == "nt":
-            try:
-                from pycaw.pycaw import AudioUtilities  # noqa: F401
-                self._pycaw_ok = True
-            except ImportError:
-                logger.info("pycaw not installed — mic session detection uses registry fallback")
 
     def start(self) -> None:
         if self._running or os.name != "nt":
@@ -61,7 +53,7 @@ class DeviceEnforcer:
         self._running = True
         self._thread = threading.Thread(target=self._loop, daemon=True, name="DeviceEnforcer")
         self._thread.start()
-        logger.info("Device enforcer started (mic=%s)", "pycaw" if self._pycaw_ok else "registry")
+        logger.info("Device enforcer started")
 
     def stop(self) -> None:
         self._running = False
@@ -82,10 +74,7 @@ class DeviceEnforcer:
             time.sleep(self._interval)
 
     def _scan_microphone(self, ai_pids: set[int]) -> None:
-        active = set(self._mic_sessions_pycaw()) if self._pycaw_ok else set()
-        if not active:
-            active = self._mic_sessions_registry(ai_pids)
-        for pid in active & ai_pids:
+        for pid in self._mic_sessions_registry(ai_pids) & ai_pids:
             if pid in self._seen_mic:
                 continue
             self._seen_mic.add(pid)
@@ -98,21 +87,8 @@ class DeviceEnforcer:
             self._seen_cam.add(pid)
             self._enforce(pid, ResourceType.CAMERA, "Camera")
 
-    def _mic_sessions_pycaw(self) -> list[int]:
-        from pycaw.pycaw import AudioUtilities
-
-        pids: list[int] = []
-        for session in AudioUtilities.GetAllSessions():
-            if session.Process:
-                try:
-                    pids.append(session.Process.pid)
-                except Exception:
-                    pass
-        return pids
-
     def _consent_pids(self, hive_path: str, ai_pids: set[int]) -> set[int]:
         found: set[int] = set()
-        cutoff = datetime.now() - timedelta(seconds=30)
         try:
             import winreg
             with winreg.OpenKey(winreg.HKEY_CURRENT_USER, hive_path) as key:
@@ -125,11 +101,10 @@ class DeviceEnforcer:
                         break
                     try:
                         with winreg.OpenKey(key, sub) as sk:
-                            last_used, _ = winreg.QueryValueEx(sk, "LastUsedTimeStart")
-                            if last_used:
-                                ts = self._filetime_to_dt(int(last_used))
-                                if ts < cutoff:
-                                    continue
+                            started, _ = winreg.QueryValueEx(sk, "LastUsedTimeStart")
+                            stopped, _ = winreg.QueryValueEx(sk, "LastUsedTimeStop")
+                            if not self._in_use(int(started), int(stopped)):
+                                continue
                             exe = sub.replace("#", "\\").replace("/", "\\")
                             candidates: list[int] = []
                             for pid in ai_pids:
@@ -147,6 +122,11 @@ class DeviceEnforcer:
         return found
 
     @staticmethod
+    def _in_use(started: int, stopped: int) -> bool:
+        """Windows sets the stop time when an app lets go of the device."""
+        return started > stopped
+
+    @staticmethod
     def _pick_pid(candidates: list[int]) -> int:
         """Prefer the foreground window PID; otherwise the newest process."""
         try:
@@ -159,10 +139,6 @@ class DeviceEnforcer:
         except Exception:
             pass
         return max(candidates)
-
-    @staticmethod
-    def _filetime_to_dt(filetime: int) -> datetime:
-        return datetime(1601, 1, 1) + timedelta(microseconds=filetime // 10)
 
     def _mic_sessions_registry(self, ai_pids: set[int]) -> set[int]:
         return self._consent_pids(_CONSENT_MIC, ai_pids)
@@ -191,30 +167,10 @@ class DeviceEnforcer:
     def _block_device(
         self, pid: int, app_name: str, resource: ResourceType, label: str, user_denied: bool = False,
     ) -> None:
-        if self._pycaw_ok and resource == ResourceType.MICROPHONE:
-            self._mute_mic_sessions(pid)
-
-        try:
-            psutil.Process(pid).terminate()
-            logger.warning("Terminated PID %d for blocked %s access", pid, label.lower())
-        except (psutil.NoSuchProcess, psutil.AccessDenied):
-            pass
-
-        msg = (
-            f"User denied {label.lower()} for {app_name}"
-            if user_denied
-            else f"Blocked {label.lower()} access for {app_name} (PID {pid})"
+        reason = f"User denied {label.lower()} for {app_name}" if user_denied else (
+            f"{label} is set to block for {app_name} (PID {pid})"
         )
-        self._bus.emit(resource, PolicyAction.BLOCK, app_name, label, msg, EventSeverity.WARNING)
-
-    def _mute_mic_sessions(self, pid: int) -> None:
-        try:
-            from pycaw.pycaw import AudioUtilities
-
-            for session in AudioUtilities.GetAllSessions():
-                if session.Process and session.Process.pid == pid:
-                    vol = session.SimpleAudioVolume
-                    if vol:
-                        vol.SetMute(1, None)
-        except Exception as e:
-            logger.debug("Could not mute mic session: %s", e)
+        self._bus.emit(
+            resource, PolicyAction.BLOCK, app_name, label,
+            f"{reason}. Not enforced in this version", EventSeverity.WARNING,
+        )

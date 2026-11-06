@@ -11,6 +11,7 @@ import psutil
 
 from ..core.events import EventBus
 from ..core.models import EventSeverity, PolicyAction, ProtectedFolder, ResourceType
+from ..core.process_safety import stop_process
 from ..permissions.resolver import PolicyResolver
 
 logger = logging.getLogger(__name__)
@@ -99,14 +100,20 @@ class FileAccessEnforcer:
                 decision = self._bus.request_approval(
                     app_name, pid, ResourceType.FILE, ofile.path, policy,
                 )
-                if decision == PolicyAction.BLOCK:
-                    try:
-                        proc.terminate()
-                        logger.warning("Terminated PID %d for blocked file access: %s", pid, ofile.path)
-                    except (psutil.NoSuchProcess, psutil.AccessDenied):
-                        pass
-                    self._bus.emit(
-                        ResourceType.FILE, PolicyAction.BLOCK, app_name, ofile.path,
-                        f"Blocked open handle to protected folder '{folder.name}'",
-                        EventSeverity.WARNING,
-                    )
+                if decision != PolicyAction.BLOCK:
+                    continue
+                self._bus.emit(
+                    ResourceType.FILE, PolicyAction.BLOCK, app_name, ofile.path,
+                    self._enforce_block(pid, policy, folder.name),
+                    EventSeverity.WARNING,
+                )
+
+    @staticmethod
+    def _enforce_block(pid: int, policy: PolicyAction, folder_name: str) -> str:
+        """Stop the app only under an explicit block rule, never for a denied or missed prompt."""
+        if policy != PolicyAction.BLOCK:
+            return f"Denied access to '{folder_name}'. The app kept running and may have read the file"
+        result = stop_process(pid)
+        if result.stopped:
+            return f"Stopped {result.name} for opening a file in blocked folder '{folder_name}'"
+        return f"Could not stop the app that opened a file in '{folder_name}': {result.reason}"

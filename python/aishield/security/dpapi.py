@@ -14,14 +14,10 @@ def is_available() -> bool:
 
 
 def protect(data: bytes, description: str = "AI Firewall") -> bytes:
-    if not is_available():
-        return data
-    try:
-        import win32crypt
-        return win32crypt.CryptProtectData(data, description, None, None, None, 0)
-    except Exception as e:
-        logger.warning("DPAPI protect failed: %s", e)
-        return data
+    """Encrypt data. Failures raise, so a caller can't store plaintext as if it were encrypted."""
+    import win32crypt
+
+    return win32crypt.CryptProtectData(data, description, None, None, None, 0)
 
 
 def unprotect(data: bytes) -> bytes:

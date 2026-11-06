@@ -122,12 +122,6 @@ class ProcessMonitor:
                     f"Unknown AI model running (PID {u.pid}, GPU {u.gpu_mb:.0f} MB)",
                     EventSeverity.CRITICAL,
                 )
-                if self._fail_closed:
-                    try:
-                        psutil.Process(u.pid).terminate()
-                        logger.warning("Fail-closed: terminated unknown AI PID %d", u.pid)
-                    except (psutil.NoSuchProcess, psutil.AccessDenied):
-                        pass
             detected.append(u)
             self._pid_to_type[u.pid] = u.ai_type
 

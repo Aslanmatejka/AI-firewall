@@ -52,6 +52,53 @@ jobs:
           $report
           if ($report -match 'has the following vulnerable packages') { exit 1 }
 
+  desktop-smoke:
+    runs-on: windows-latest
+    env:
+      DOTNET_NOLOGO: "1"
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          global-json-file: global.json
+      - name: Install Python dependencies
+        run: python -m pip install -r python/requirements.txt
+      - name: Build
+        run: dotnet build csharp/AiShield.sln -c Release
+      - name: Desktop app survives with no service running
+        shell: pwsh
+        run: ./scripts/smoke-dashboard.ps1 -Seconds 30 -ScreenshotPath artifacts/dashboard-offline.png
+      - name: Desktop app survives connected to the real service
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts | Out-Null
+          $service = Start-Process python -ArgumentList '-m', 'aishield' -WorkingDirectory python -PassThru `
+            -RedirectStandardOutput artifacts/service.out -RedirectStandardError artifacts/service.err
+          try {
+            $deadline = (Get-Date).AddSeconds(60)
+            do {
+              Start-Sleep -Seconds 1
+              if ($service.HasExited) { throw "The service exited with code $($service.ExitCode)" }
+              $health = try { Invoke-RestMethod http://127.0.0.1:9470/api/health } catch { $null }
+            } until ($health.ok -or (Get-Date) -gt $deadline)
+            if (-not $health.ok) { throw "The service never became healthy" }
+            ./scripts/smoke-dashboard.ps1 -Seconds 30 -ScreenshotPath artifacts/dashboard-online.png
+            if ($service.HasExited) { throw "The service crashed during the smoke test" }
+          } finally {
+            if (-not $service.HasExited) { Stop-Process -Id $service.Id -Force }
+          }
+      - name: Keep screenshots and service logs
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: desktop-smoke
+          path: artifacts/
+          if-no-files-found: ignore
+
   secrets:
     runs-on: ubuntu-latest
     steps:

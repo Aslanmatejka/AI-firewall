@@ -599,7 +599,7 @@
           <div>
             <div class="doc-section" id="start">
               <h2>Quick Start (read this first)</h2>
-              <p><strong>You are looking at the dashboard.</strong> If the badge top-right says <em>Firewall Active</em>, you are done installing.</p>
+              <p><strong>You are looking at the dashboard.</strong> If the badge top-right says <em>Active</em>, you are done installing.</p>
               <h3>If the service is NOT running yet</h3>
               <ol style="line-height:1.8;margin:0.5rem 0 1rem 1.2rem">
                 <li>Open <strong>PowerShell</strong> in the project folder</li>
@@ -666,10 +666,9 @@
                 <tr><th>Problem</th><th>Fix</th></tr>
                 <tr><td>Service Offline</td><td>Run <code>.\scripts\start.ps1</code> and keep PowerShell open.</td></tr>
                 <tr><td>No pending requests</td><td>Policy may be <em>allow</em>, or no AI app is running.</td></tr>
-                <tr><td>Block Domain fails</td><td>Restart PowerShell <strong>as Administrator</strong>.</td></tr>
+                <tr><td>Block Domain fails</td><td>Network blocking is switched off until it can target a single app.</td></tr>
                 <tr><td>Clipboard warning in logs</td><td>Harmless — poll mode still works.</td></tr>
               </table>
-              <p>Run <code>python scripts\test-live-approval.py</code> to verify approvals work.</p>
             </div>
             <div class="doc-section" id="components">
               <h2>Components</h2>
@@ -705,7 +704,6 @@
                 <li>Hosts file modification for AI website blocking</li>
                 <li>Terminating protected system processes</li>
               </ul>
-              <p>Run AI Firewall as Administrator for full network blocking capability.</p>
             </div>
             <div class="doc-section" id="next">
               <h2>What's Next</h2>
@@ -820,7 +818,7 @@
         <section>
           <div class="section-header">
             <h2>AI Network Connections</h2>
-            <p>Outbound traffic to known AI services. Block a connection or entire domain.</p>
+            <p><strong>Network detection isn't working yet.</strong> This list can stay empty while AI apps are online, and blocking is switched off. A rebuilt version is planned.</p>
           </div>
           <div class="table-wrap">
             <div class="card">
@@ -1055,7 +1053,7 @@
 
     function tag(cls, t) { return `<span class="tag tag-${cls}">${t}</span>`; }
     function fmtTime(iso) { return new Date(iso).toLocaleTimeString(); }
-    function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+    function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
     function toast(msg, type) {
       const el = document.getElementById('toast');
@@ -1361,7 +1359,7 @@
           badge.textContent = active ? 'Active' : 'Offline';
           badge.className = 'status-badge ' + (active ? 'status-active' : 'status-inactive');
         }
-        if (sidebar) sidebar.textContent = active ? 'Firewall Active' : 'Offline';
+        if (sidebar) sidebar.textContent = active ? 'Service running' : 'Offline';
         if (dot) dot.style.background = active ? 'var(--green)' : 'var(--red)';
 
         const ai = data.ai_processes?.length ?? 0;
@@ -1471,7 +1469,7 @@
     async function pollHealth() {
       const res = await fetchJson('/api/health', {}, 3000);
       const up = res.ok && res.data?.ok;
-      document.getElementById('sidebarStatus').textContent = up ? 'Firewall Active' : 'Offline';
+      document.getElementById('sidebarStatus').textContent = up ? 'Service running' : 'Offline';
       document.getElementById('healthDot').style.background = up ? 'var(--green)' : 'var(--red)';
       document.getElementById('statusBadge').textContent = up ? 'Active' : 'Offline';
       document.getElementById('statusBadge').className = 'status-badge ' + (up ? 'status-active' : 'status-inactive');

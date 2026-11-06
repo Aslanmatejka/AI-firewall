@@ -48,13 +48,8 @@ class DeviceGuard:
 
         self._handled.add(key)
         label = "Microphone" if resource == ResourceType.MICROPHONE else "Camera"
-        try:
-            import psutil
-            psutil.Process(proc.pid).terminate()
-        except Exception:
-            pass
         self._bus.emit(
             resource, PolicyAction.BLOCK, proc.ai_type, label,
-            f"Blocked {label.lower()} access for {proc.ai_type} (PID {proc.pid})",
+            f"{label} is set to block for {proc.ai_type}. Not enforced in this version",
             EventSeverity.WARNING,
         )

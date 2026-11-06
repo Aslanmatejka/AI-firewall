@@ -6,7 +6,15 @@ Symptom → cause → fix. Read top to bottom for your issue.
 
 ## Service & dashboard
 
-### “Service Offline” / dashboard won’t load / connection refused
+### Sign-in page instead of the dashboard
+
+**Cause:** The sign-in link expired or was already used, or AI Firewall restarted.
+
+**Fix:** Run `.\scripts\open-dashboard.ps1`.
+
+---
+
+### “Service offline” / dashboard won’t load / connection refused
 
 **Cause:** Python service is not running.
 
@@ -14,8 +22,7 @@ Symptom → cause → fix. Read top to bottom for your issue.
 
 1. Open PowerShell in the project folder.
 2. Run `.\scripts\start.ps1`.
-3. Wait for `Dashboard: http://127.0.0.1:9470`.
-4. Refresh the browser.
+3. Wait for `AI Firewall is running`. Your browser opens the dashboard.
 
 **Still broken?** Check if something else uses port 9470:
 
@@ -39,11 +46,11 @@ Kill the old process or change `dashboard_port` in config.
 
 ---
 
-### WPF app says “Service Offline” but web works
+### Desktop app says “Service offline” but web works
 
-**Cause:** Desktop app started before service, or wrong port.
+**Cause:** The two aren't using the same Windows account.
 
-**Fix:** Start `.\scripts\start.ps1` first, then `.\scripts\launch-dashboard.ps1`.
+**Fix:** Run `.\scripts\start.ps1` and `.\scripts\launch-dashboard.ps1` as the same user, either both as administrator or neither. If something still looks wrong, check `%LOCALAPPDATA%\AiShield\dashboard.log`.
 
 ---
 
@@ -56,15 +63,7 @@ Kill the old process or change `dashboard_port` in config.
 1. Is policy set to **ask** (not allow) for that resource?
 2. Is an AI process actually running? (Check **AI Processes** page.)
 3. Is `approval_ui` set to `dashboard` in config? (Not `desktop` only with no dialog.)
-4. For network: is there active traffic to an AI domain?
-
-**Test the approval pipeline:**
-
-```powershell
-python scripts\test-live-approval.py
-```
-
-Should print `LIVE APPROVAL TEST PASSED`.
+4. Network requests won't appear: network detection isn't working yet.
 
 ---
 
@@ -76,23 +75,13 @@ Should print `LIVE APPROVAL TEST PASSED`.
 
 ---
 
-## Network blocking
+## Network
 
-### “Block Domain” does nothing
+### The Network page stays empty, or blocking gives an error
 
-**Cause:** Not running as Administrator.
+**Cause:** Network detection and blocking aren't working yet.
 
-**Fix:** Close service, open PowerShell **as Administrator**, run `.\scripts\start.ps1` again.
-
-**Verify:** AI Firewall uses `netsh`, which needs admin to add rules.
-
----
-
-### Block works but comes back after reboot
-
-**Cause:** Firewall rules may not persist if created in a non-admin session, or service not installed as Windows Service.
-
-**Fix:** Use `.\scripts\install-service.ps1` as admin for always-on enforcement.
+Blocking is switched off on purpose. It worked by blocking a domain's IP address, and many unrelated sites can share that address. If an older version left rules behind, [Installation](INSTALLATION.md#if-you-used-an-older-version) shows how to remove them.
 
 ---
 
@@ -126,17 +115,11 @@ Should print `LIVE APPROVAL TEST PASSED`.
 
 ## Mic / camera
 
-### Mic blocking not detected
+### Mic or camera use not detected
 
-**Cause:** `pycaw` not installed or no active audio session.
+**Cause:** AI Firewall relies on Windows' own record of which desktop apps use these devices. It can't see Microsoft Store apps, or apps it doesn't recognize as AI.
 
-**Fix:**
-
-```powershell
-pip install pycaw
-```
-
-Restart service. Speak/use mic while AI app is running to trigger detection.
+Denying access or setting a block policy is recorded, but doesn't stop the app in this version.
 
 ---
 
@@ -173,21 +156,6 @@ python -m pip install -r python\requirements.txt
 
 ---
 
-## Windows Service (install-service.ps1)
-
-### Service “AiShield” won’t start
-
-**Fix:**
-
-```powershell
-# As Administrator
-Get-EventLog -LogName Application -Source AiShield -Newest 10
-```
-
-Ensure Python is on the system PATH for the service account, or reinstall with `install-service.ps1`.
-
----
-
 ## Tests failing (developers)
 
 ```powershell
@@ -195,7 +163,7 @@ cd python
 python -m unittest discover -s tests -v
 ```
 
-All 12 tests should pass. If resolver tests fail on Windows, ensure no stale `%APPDATA%\AiShield\permissions.db` from manual testing.
+All tests should pass. If resolver tests fail on Windows, ensure no stale `%APPDATA%\AiShield\permissions.db` from manual testing.
 
 ---
 
@@ -213,10 +181,7 @@ Run with service up:
 
 ```powershell
 # Service reachable?
-Invoke-WebRequest http://127.0.0.1:9470/api/status -UseBasicParsing | Select-Object StatusCode
-
-# Live approval test
-python scripts\test-live-approval.py
+Invoke-RestMethod http://127.0.0.1:9470/api/health
 ```
 
-Both should succeed.
+It should show `ok: True`.

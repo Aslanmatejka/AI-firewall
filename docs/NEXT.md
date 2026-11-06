@@ -33,8 +33,8 @@ One .NET 10 codebase with three processes:
 
 | | Milestone | Status |
 |---|-----------|--------|
-| M0 | Repo cleanup, .NET 10, stricter CI | In progress |
-| M1 | Contain the worst risks in today's code | Planned |
+| M0 | Repo cleanup, .NET 10, stricter CI | Done |
+| M1 | Contain the worst risks in today's code | Done |
 | M2 | Protected service core and Consent prompt | Planned |
 | M3 | Real installer (MSI), upgrade, clean uninstall | Planned |
 | M4 | Network detection and blocking that works | Planned |

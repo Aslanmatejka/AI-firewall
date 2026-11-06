@@ -13,26 +13,27 @@ Control what AI software can access on your Windows PC: files, network, clipboar
 .\scripts\start.ps1
 ```
 
-Then open **http://127.0.0.1:9470**.
+Your browser opens the dashboard and signs you in. To open it again later, run `.\scripts\open-dashboard.ps1`.
 
 ## Current status
 
 | Area | State today |
 |------|-------------|
-| AI app detection | **Works, with limits.** Matches names and paths, so it can flag the wrong app, and it misses command-line agents running under `node` or `python`. |
-| Network | **Not working.** In testing it recognized none of its 16 configured AI domains. Blocking also acts on IP addresses, which many unrelated sites can share. |
-| Files | **Partial.** Notices protected files that an AI app already has open. The folder watcher can blame the wrong app, and "block" there only logs. |
-| Clipboard | **Partial.** Spots sensitive text, but can't tell who read it. |
-| Mic and camera | **Unreliable.** |
+| AI app detection | **Works, with limits.** Matches program names, so a renamed app slips through, and it misses command-line agents running under `node` or `python`. |
+| Network | **Not working.** In testing it recognized none of its 16 configured AI domains. Blocking is switched off because it acted on IP addresses, which many unrelated sites can share. |
+| Files | **Partial.** Notices protected files that an AI app already has open, so it responds after the fact. Under a `block` policy it stops the app, but never a browser, shell or part of Windows. |
+| Clipboard | **Partial.** Spots sensitive text while an AI app is in front, but can't tell who read it. Stores only a category, never the text. |
+| Mic and camera | **Detection only.** Uses Windows' own usage records, and a denial is recorded but not enforced. |
 | Screenshots | **Not working.** The Windows call it uses only affects the app's own windows. |
 | Audit log | **Works, but isn't encrypted.** An unencrypted copy stays on disk even with `encrypt_db_at_rest` on. |
-| Tamper resistance | **None.** Software running as you can stop it or change its settings. |
+| Dashboard access | **Protected from other websites and casual scripts** with a sign-in and token. |
+| Tamper resistance | **None.** Software running as you can read that token, stop AI Firewall or change its settings. |
 
 ## Project layout
 
 ```
 config/         Default policy
-csharp/         Windows service and WPF desktop app (.NET 10)
+csharp/         WPF desktop app and the future Windows service (.NET 10)
 docs/           Guides
 experimental/   Unfinished kernel, Rust and Linux code (not built or shipped)
 python/         Current engine and web dashboard (being replaced by C#)

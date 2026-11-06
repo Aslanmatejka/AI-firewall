@@ -9,6 +9,9 @@ namespace AiShield.Dashboard;
 
 public partial class MainWindow : Window
 {
+    // True while a combo box is being set to the saved value, so showing it doesn't save it again.
+    private bool _showingSavedPolicy;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -53,8 +56,35 @@ public partial class MainWindow : Window
             vm.SelectedPage = page;
     }
 
+    private void FolderPolicyCombo_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is System.Windows.Controls.ComboBox combo && combo.DataContext is ProtectedFolderDto dto)
+            ShowSavedPolicy(combo, dto.Policy);
+    }
+
+    private void ShowSavedPolicy(System.Windows.Controls.ComboBox combo, string current)
+    {
+        _showingSavedPolicy = true;
+        try
+        {
+            foreach (System.Windows.Controls.ComboBoxItem item in combo.Items)
+            {
+                if (item.Content?.ToString() == current)
+                {
+                    combo.SelectedItem = item;
+                    break;
+                }
+            }
+        }
+        finally
+        {
+            _showingSavedPolicy = false;
+        }
+    }
+
     private async void FolderPolicy_Changed(object sender, SelectionChangedEventArgs e)
     {
+        if (_showingSavedPolicy) return;
         if (sender is not System.Windows.Controls.ComboBox combo || combo.Tag is not string folderName) return;
         if (combo.SelectedItem is not System.Windows.Controls.ComboBoxItem item) return;
         var policy = item.Content?.ToString() ?? "ask";
@@ -93,18 +123,12 @@ public partial class MainWindow : Window
             "camera" => dto.Camera,
             _ => "ask",
         };
-        foreach (System.Windows.Controls.ComboBoxItem item in combo.Items)
-        {
-            if (item.Content?.ToString() == current)
-            {
-                combo.SelectedItem = item;
-                break;
-            }
-        }
+        ShowSavedPolicy(combo, current);
     }
 
     private async void AppPolicy_Changed(object sender, SelectionChangedEventArgs e)
     {
+        if (_showingSavedPolicy) return;
         if (sender is not System.Windows.Controls.ComboBox combo || combo.DataContext is not AppPolicyDto dto) return;
         if (combo.SelectedItem is not System.Windows.Controls.ComboBoxItem item) return;
         if (e.AddedItems.Count == 0) return;

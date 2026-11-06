@@ -11,7 +11,7 @@ Technical overview for developers and IT admins. End users should read [USER_GUI
 │              Dashboard (Web :9470  /  WPF)                   │
 │         Approve · Deny · Policies · Audit · Lockdown         │
 └──────────────────────────┬──────────────────────────────────┘
-                           │ HTTP REST  +  Named pipe \\.\pipe\AiShield
+                           │ HTTP on this PC only, signed in
 ┌──────────────────────────▼──────────────────────────────────┐
 │                   Python Service (aishield)                    │
 │  EventBus · PolicyResolver · PermissionManager (SQLite+DPAPI)  │
@@ -19,12 +19,11 @@ Technical overview for developers and IT admins. End users should read [USER_GUI
 │  ClipboardGuard · ScreenshotGuard · DeviceGuard/Enforcer     │
 │  BrowserProtection · EnterprisePolicyClient                   │
 └────────────┬────────────────────────────────────────────────┘
-             │ netsh advfirewall
+             │
    ┌─────────▼─────────────────────────────────────────┐
    │              Windows 10 / 11                        │
    └───────────────────────────────────────────────────┘
 
-Parallel: C# AiShield.Service supervises Python + native Process/Network monitors
 ```
 
 ---
@@ -34,8 +33,8 @@ Parallel: C# AiShield.Service supervises Python + native Process/Network monitor
 For any access request:
 
 1. **Temporary grant** (user clicked Allow in last 24h)
-2. **Per-app rule** (App Rules table)
-3. **Protected folder policy** (for file access)
+2. **Protected folder policy** (for file access)
+3. **Per-app rule** (App Rules table)
 4. **Global resource policy** (`network_policy`, `clipboard_policy`, …)
 5. **Global default** (`global_policy`)
 
@@ -48,39 +47,40 @@ If policy is **ask**, `EventBus.request_approval()` blocks until dashboard `/api
 ### Process monitor + AI detector
 - Polls processes every `monitor_interval_seconds`
 - Signature match against `ai_process_signatures`
-- GPU usage via `nvidia-smi` / WMI fallback
+- Signatures match the program's file name, not its whole path
+- GPU usage via `nvidia-smi`
 - Unknown AI via `ml_heuristics.py` (behavioral score)
-- `fail_closed`: terminate unknown GPU workloads
+- `fail_closed`: mark unknown GPU workloads as blocked in events (nothing is stopped)
 
 ### Network firewall
-- `psutil` TCP connections → match `ai_domains`
-- Block path: `netsh advfirewall` rules
-- Ask/block triggers approval or process terminate
+- `psutil` TCP connections → reverse DNS → match `ai_domains`. **This doesn't work:** AI services sit behind CDNs, so reverse DNS rarely returns their names
+- Blocking is switched off, and a denial is only recorded
 
-### File protection (dual layer)
-| Layer | Mechanism | Blocks before open? |
-|-------|-----------|---------------------|
-| File guard | `watchdog` directory events | No — detects activity |
-| File enforcer | Scans AI process open handles | Partial — active handles |
+### File protection
+- File enforcer polls the open files of detected AI processes, so it responds after a file is opened
+- Only an explicit `block` policy stops the app, and never a browser, shell or part of Windows (`core/process_safety.py`)
 
 ### Clipboard
 - `AddClipboardFormatListener` via ctypes message-only window
 - Falls back to 1s poll if listener unavailable
 - Sensitive regex patterns + foreground AI check
+- Only a category label such as `clipboard: API key` is stored, never the text
 
 ### Device (mic/camera)
-- **Device guard:** policy on AI process appearance
-- **Device enforcer:** pycaw audio sessions + ConsentStore registry for webcam
+- Windows' ConsentStore registry records show which desktop apps use the mic or camera right now
+- Decisions are recorded, and nothing is stopped
 
 ### Permissions
 - SQLite: grants, app_policies, audit_log
-- DPAPI seal on service stop when `encrypt_db_at_rest: true`
+- Grants match the exact resource, ignoring case
+- `encrypt_db_at_rest` writes an encrypted copy on stop, but the plaintext database stays on disk
 
-### IPC
-| Channel | Use |
-|---------|-----|
-| HTTP `:9470` | Dashboard REST API |
-| Named pipe | Local tools, `simulate_approval`, WPF fallback |
+### API access (`dashboard/security.py`)
+- Exact Host check, which stops DNS rebinding
+- Other sites' requests are refused by an Origin check and a strict cookie
+- API clients send a per-run token from `%APPDATA%\AiShield\api-token.json`
+- Browsers sign in with a one-time link and hold an HttpOnly session cookie
+- **Limit:** software running as this user can read the token file. Stopping that needs the SYSTEM service planned for M2
 
 ---
 
@@ -88,9 +88,9 @@ If policy is **ask**, `EventBus.request_approval()` blocks until dashboard `/api
 
 | Project | Role |
 |---------|------|
-| `AiShield.Core` | Config, permissions, event bus, process/network monitors |
-| `AiShield.Service` | Windows Service — supervises Python backend |
-| `AiShield.Dashboard` | WPF UI — HTTP client to Python API |
+| `AiShield.Core` | Models and starting points for the C# engine; nothing runs it yet |
+| `AiShield.Service` | Empty until M2; nothing installs it |
+| `AiShield.Dashboard` | WPF UI, an HTTP client of the Python API |
 
 ---
 
@@ -99,8 +99,7 @@ If policy is **ask**, `EventBus.request_approval()` blocks until dashboard `/api
 `load_merged_config()` layers:
 
 1. `config/default.json`
-2. `%ProgramData%\AiShield\config.json`
-3. `%APPDATA%\AiShield\config.json`
+2. `%APPDATA%\AiShield\user_config.json`
 
 See [CONFIGURATION.md](CONFIGURATION.md) for all keys.
 
@@ -111,7 +110,8 @@ See [CONFIGURATION.md](CONFIGURATION.md) for all keys.
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
 | `/api/status` | GET | Live state + pending requests |
-| `/api/approve/{id}?allow=true` | POST | Resolve pending approval |
+| `/api/approve/{id}?allow=true` | POST | Resolve pending approval (`allow` is required) |
+| `/api/login-code` | POST | Mint a one-time sign-in link (token only) |
 | `/api/policy/global` | POST | Set network/clipboard/… policy |
 | `/api/lockdown` | POST | Emergency strict mode |
 | `/api/audit/export` | GET | CSV audit download |
@@ -122,10 +122,9 @@ Full list in web dashboard **Documentation** page and `dashboard/server.py`.
 
 ## Security notes
 
-- Bind dashboard to `127.0.0.1` only (default) — do not expose to LAN without auth
-- Admin required for persistent firewall rules
-- Fail-closed mode terminates unknown AI processes — test before enabling
-- Enterprise policy URL should use HTTPS in production
+- AI Firewall refuses to listen on anything but this PC
+- It has no tamper resistance yet: software running as this user can stop it or change its settings
+- The enterprise policy URL must use HTTPS, but policies aren't signed yet
 
 ---
 
@@ -133,11 +132,12 @@ Full list in web dashboard **Documentation** page and `dashboard/server.py`.
 
 ```powershell
 cd python
-python -m unittest discover -s tests -v    # 12 unit tests
-python ..\scripts\test-live-approval.py  # Live approval E2E
+python -m unittest discover -s tests -v    # Includes booting the real service
 ```
 
-CI: `.github/workflows/ci.yml` — Python tests + dotnet build on Windows.
+`.\scripts\smoke-dashboard.ps1` launches the real desktop app and fails if it crashes or logs an error.
+
+CI (`.github/workflows/`) runs all of this on Windows, plus lint, format, dependency and secret checks and CodeQL.
 
 ---
 

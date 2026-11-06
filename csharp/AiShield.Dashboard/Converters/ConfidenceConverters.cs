@@ -34,21 +34,3 @@ public class ConfidenceToColorConverter : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         => throw new NotSupportedException();
 }
-
-public class HealthToColorConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        var app = System.Windows.Application.Current;
-        if (value is int h)
-        {
-            if (h >= 75) return app.FindResource("SuccessBrush")!;
-            if (h >= 50) return app.FindResource("WarningBrush")!;
-            return app.FindResource("DangerBrush")!;
-        }
-        return app.FindResource("AccentBrush")!;
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        => throw new NotSupportedException();
-}

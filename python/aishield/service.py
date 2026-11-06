@@ -14,7 +14,6 @@ from .core.models import PolicyAction, ShieldStatus
 from .detector.ai_detector import AiDetector
 from .monitor.process_monitor import ProcessMonitor
 from .network.firewall import NetworkFirewall
-from .guard.file_guard import FileAccessGuard
 from .guard.file_enforcer import FileAccessEnforcer
 from .guard.clipboard_guard import ClipboardGuard
 from .guard.screenshot_guard import ScreenshotGuard
@@ -25,7 +24,6 @@ from .permissions.manager import PermissionManager
 from .permissions.resolver import PolicyResolver
 from .actions.shield_actions import ShieldActions
 from .ui.approval_dialog import show_approval_dialog
-from .ipc.named_pipe import NamedPipeServer, pipe_handler
 from .enterprise.policy_client import EnterprisePolicyClient
 
 logger = logging.getLogger(__name__)
@@ -45,9 +43,6 @@ class AiShieldService:
             self._config, self._bus, self._resolver, self._process_monitor.get_ai_type_for_pid,
         )
         self._folders = get_protected_folders(self._config)
-        self._file_guard = FileAccessGuard(
-            self._folders, self._bus, self._get_primary_ai_app, self._resolver,
-        )
         self._file_enforcer = FileAccessEnforcer(
             self._folders, self._bus,
             self._process_monitor.get_ai_pids,
@@ -77,7 +72,6 @@ class AiShieldService:
         self._actions = ShieldActions(self)
         self._running = False
         self._cached_models: list[dict[str, Any]] = []
-        self._pipe: NamedPipeServer | None = None
         self._enterprise: EnterprisePolicyClient | None = None
         self._status_cache: tuple[float, Any] | None = None
         self._status_cache_ttl = 10.0
@@ -135,7 +129,6 @@ class AiShieldService:
         logger.info("Starting AI Firewall service...")
         self._process_monitor.start()
         self._network.start()
-        self._file_guard.start()
         self._file_enforcer.start()
         self._clipboard.start()
         self._screenshot.start()
@@ -150,10 +143,6 @@ class AiShieldService:
             target=self._scan_models_startup, daemon=True, name="ModelScan",
         )
         model_thread.start()
-
-        if self._config.get("named_pipe_enabled", True):
-            self._pipe = NamedPipeServer(pipe_handler(self))
-            self._pipe.start()
 
         if self._config.get("enterprise_policy_url"):
             self._enterprise = EnterprisePolicyClient(self)
@@ -173,13 +162,10 @@ class AiShieldService:
         self._running = False
         self._process_monitor.stop()
         self._network.stop()
-        self._file_guard.stop()
         self._file_enforcer.stop()
         self._clipboard.stop()
         self._screenshot.stop()
         self._device_enforcer.stop()
-        if self._pipe:
-            self._pipe.stop()
         if self._enterprise:
             self._enterprise.stop()
         self._permissions.seal()
