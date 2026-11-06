@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import logging
 import os
-import threading
-from pathlib import Path
 from typing import Callable
 
 from watchdog.events import FileSystemEvent, FileSystemEventHandler

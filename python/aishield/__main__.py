@@ -46,9 +46,9 @@ def main() -> None:
     signal.signal(signal.SIGINT, shutdown)
     signal.signal(signal.SIGTERM, shutdown)
 
-    print(f"\n  AI Firewall is running")
+    print("\n  AI Firewall is running")
     print(f"  Dashboard: http://{host}:{port}")
-    print(f"  Press Ctrl+C to stop\n")
+    print("  Press Ctrl+C to stop\n")
 
     uvicorn.run(app, host=host, port=port, log_level="warning")
 

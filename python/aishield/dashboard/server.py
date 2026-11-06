@@ -13,6 +13,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
 from pydantic import BaseModel
 
+from .. import __version__
 from ..service import AiShieldService
 
 
@@ -79,7 +80,7 @@ class AppResourcePolicyBody(BaseModel):
 
 
 def create_app(service: AiShieldService) -> FastAPI:
-    app = FastAPI(title="AI Firewall Dashboard", version="0.2.0")
+    app = FastAPI(title="AI Firewall Dashboard", version=__version__)
     actions = service.actions
 
     @app.get("/", response_class=HTMLResponse)

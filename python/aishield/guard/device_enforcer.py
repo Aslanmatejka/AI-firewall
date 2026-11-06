@@ -210,7 +210,6 @@ class DeviceEnforcer:
     def _mute_mic_sessions(self, pid: int) -> None:
         try:
             from pycaw.pycaw import AudioUtilities
-            from pycaw.utils import AudioSession
 
             for session in AudioUtilities.GetAllSessions():
                 if session.Process and session.Process.pid == pid:

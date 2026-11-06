@@ -48,5 +48,4 @@ Write-Host "AI Firewall installed and started." -ForegroundColor Green
 Write-Host "Dashboard: http://127.0.0.1:9470"
 Write-Host "Launch desktop UI: .\scripts\launch-dashboard.ps1"
 Write-Host ""
-Write-Host "Optional: kernel minifilter  .\scripts\install-minifilter.ps1"
 Write-Host "Optional: browser blocking  .\scripts\configure-browser-gpo.ps1"

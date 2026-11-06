@@ -1,24 +1,34 @@
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
+. (Join-Path $PSScriptRoot "lib\Find-DotNet.ps1")
 
 Write-Host "=== AI Firewall Setup ===" -ForegroundColor Cyan
 
-# Config to ProgramData (non-admin friendly copy for user AppData too)
-$UserData = Join-Path $env:APPDATA "AiShield"
-New-Item -ItemType Directory -Force -Path $UserData | Out-Null
-
 Write-Host "Installing Python dependencies..."
-pip install -r (Join-Path $Root "python\requirements.txt")
+python -m pip install -r (Join-Path $Root "python\requirements-dev.txt")
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 Write-Host "Running tests..."
 Push-Location (Join-Path $Root "python")
-python -m unittest discover -s tests -v
-Pop-Location
+try {
+    python -m unittest discover -s tests -v
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+} finally {
+    Pop-Location
+}
 
-$DotNet = "$env:ProgramFiles\dotnet\dotnet.exe"
-if (Test-Path $DotNet) {
+$DotNet = Find-DotNet
+if ($DotNet) {
     Write-Host "Building C# solution..."
-    & $DotNet build (Join-Path $Root "csharp\AiShield.sln") -c Release
+    Push-Location $Root
+    try {
+        & $DotNet build "csharp\AiShield.sln" -c Release
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    } finally {
+        Pop-Location
+    }
+} else {
+    Write-Host ".NET 10 SDK not found, skipping the desktop app build." -ForegroundColor Yellow
 }
 
 Write-Host ""

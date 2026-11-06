@@ -84,7 +84,7 @@ Should print `LIVE APPROVAL TEST PASSED`.
 
 **Fix:** Close service, open PowerShell **as Administrator**, run `.\scripts\start.ps1` again.
 
-**Verify:** AI Firewall tries WFP first (`wfp_enabled`), then `netsh`. Both need admin for persistent OS rules.
+**Verify:** AI Firewall uses `netsh`, which needs admin to add rules.
 
 ---
 
@@ -108,7 +108,7 @@ Should print `LIVE APPROVAL TEST PASSED`.
 2. Path must be under a **protected folder**.
 3. Policy must be **ask** or **block** (not allow).
 
-**Stronger blocking:** Install kernel minifilter (see [NEXT.md](NEXT.md) — requires WDK + signing).
+**Limits:** file protection responds after a file is opened. It can't stop the open itself.
 
 ---
 

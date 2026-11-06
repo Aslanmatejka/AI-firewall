@@ -140,7 +140,6 @@ Sensitive clipboard patterns include: `password`, `api_key`, `secret`, `token`, 
 | Change policies in UI | Yes | Yes |
 | Block domains (firewall rules) | May fail silently | Works |
 | Hosts-file browser blocking | No | Yes (`configure-browser-gpo.ps1`) |
-| Install kernel minifilter | No | Yes |
 
 **Tip:** Right-click PowerShell → **Run as administrator**, then `.\scripts\start.ps1` if you need full network blocking.
 

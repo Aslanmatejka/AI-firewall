@@ -1,117 +1,51 @@
-# What’s Next
+# What's next
 
-Everything in this document is **not required** to use AI Firewall today. The app is fully usable without any of it. This is the honest list of what still needs external work, signing, or future development.
+AI Firewall is being rebuilt for production. **It isn't production ready yet**, and this page says what's changing and why.
 
----
+## Why a rebuild
 
-## You do not need any of this to start
+An AI app running as you has the same rights as anything else running as you. If the firewall runs that way too, the app can switch it off, edit its policy or approve its own requests. Real protection needs a part of the firewall that a non-admin app can't touch.
 
-If you only want to monitor AI apps, approve access, and block network/files from the dashboard:
+Reviewing the current version also found that several features can't do what they claim. [The README](../README.md#current-status) lists them.
 
-1. `.\scripts\start.ps1`
-2. Open http://127.0.0.1:9470
+## Where it's going
 
-Stop reading here unless you are a developer, IT admin, or want kernel-level blocking.
+One .NET 10 codebase with three processes:
 
----
+| Process | Runs as | Job |
+|---------|---------|-----|
+| `AiShield.Service` | SYSTEM | Holds policy, decides, enforces |
+| `AiShield.Dashboard` | You, once per session | Main window, tray, clipboard watch |
+| `AiShield.Consent` | Restricted SYSTEM, private desktop | The only way to allow or weaken anything, isolated like a UAC prompt |
 
-## Tier 1 — Needs hardware/signing (not in repo alone)
+## What v1 will promise
 
-These have **code scaffolds** in the repository but cannot protect a normal user’s PC until built and signed:
+| Area | Promise | Won't promise |
+|------|---------|---------------|
+| Network | Per-app blocking with firewall rules; browsers through an optional policy | Seeing browsers that use encrypted DNS on shared CDNs |
+| Files | Detected within about a second, then respond | Blocking before a file opens (that needs a kernel driver) |
+| Mic and camera | Detect from Windows' own usage records; act on dedicated apps by policy | The exact process; browsers get a notification only |
+| Clipboard | "Sensitive text was copied while an AI app was in front" | Knowing who read it (Windows doesn't expose this) |
+| Screenshots | Our own windows are excluded from capture | Stopping other apps' captures |
+| Tampering | Apps without admin rights can't stop it, edit policy or approve themselves | Stopping admin-level code, or identifying a renamed or unknown AI |
 
-| Item | Status in repo | What you still need |
-|------|----------------|---------------------|
-| **Kernel minifilter** (block file opens before they happen) | C source + `.vcxproj` + install script | Visual Studio, WDK, `testsigning` or EV code-signing cert, reboot |
-| **Kernel WFP callout driver** | Rust stub only | Windows driver project + signing |
-| **Production MSI installer** | `package.ps1` zip only | WiX/Inno Setup + code-signing cert |
-| **Microsoft Store / SmartScreen trust** | — | Authenticode signing, reputation |
+## Milestones
 
-### Minifilter — if you want to try it (experts only)
+| | Milestone | Status |
+|---|-----------|--------|
+| M0 | Repo cleanup, .NET 10, stricter CI | In progress |
+| M1 | Contain the worst risks in today's code | Planned |
+| M2 | Protected service core and Consent prompt | Planned |
+| M3 | Real installer (MSI), upgrade, clean uninstall | Planned |
+| M4 | Network detection and blocking that works | Planned |
+| M5 | File, device and clipboard guards in C#; Python removed | Planned |
+| M6 | Operational hardening; signed enterprise policy; opt-in web dashboard | Planned |
+| M7 | Signed releases, release gate, security docs | Planned |
 
-```powershell
-# 1. Install Visual Studio + Windows Driver Kit
-# 2. Enable test signing (ONE TIME, requires reboot):
-bcdedit /set testsigning on
+## After v1
 
-# 3. Build
-.\native\minifilter\build.ps1
-
-# 4. Install (Administrator)
-.\scripts\install-minifilter.ps1
-
-# 5. Restart AI Firewall service
-.\scripts\start.ps1
-```
-
-If the driver is not loaded, file protection still works via **user-mode enforcer** (open-handle scan) and **folder watcher** — you lose only kernel pre-open blocking.
-
----
-
-## Tier 2 — Platform expansion
-
-| Item | Status | Notes |
-|------|--------|-------|
-| **Linux agent** | eBPF scaffold in `linux/aishield-ebpf/` | Needs loader daemon, policy sync, packaging |
-| **macOS agent** | Not started | EndpointSecurity framework |
-| **Full C# guard port** | C# supervises Python; native monitors added | Rewriting all guards in C# is optional |
-
----
-
-## Tier 3 — Enterprise & advanced detection
-
-| Item | Status | Notes |
-|------|--------|-------|
-| **Hosted enterprise policy server** | Local test server works (`start-policy-server.ps1`) | Production needs HTTPS, auth, multi-tenant UI |
-| **Browser extension block via GPO** | Script + docs (`configure-browser-gpo.ps1`) | Manual GPO in Active Directory, not automated |
-| **True ML model for unknown AI** | Behavioral heuristics shipped (`ml_heuristics.py`) | Train classifier on process/network features — future |
-| **ETW telemetry pipeline** | Not started | Deep OS event stream |
-
----
-
-## Tier 4 — Nice-to-have polish
-
-| Item | Notes |
-|------|-------|
-| Rust WFP in native DLL | Python `wfp_bridge.py` is the active path; Rust returns stub |
-| System tray in WPF | Partial; minimize behavior varies |
-| Auto-update channel | Not implemented |
-| Mobile approval app | Not implemented |
-| Signed kernel catalog for minifilter INF | Required for production driver load without test signing |
-
----
-
-## Roadmap summary
-
-```
-SHIPPED TODAY          NEXT (optional)              FUTURE
-─────────────────────────────────────────────────────────────
-Web + WPF dashboard    Kernel minifilter load       Linux eBPF agent
-Process detection    Code-signed MSI               macOS agent
-Network WFP/netsh    Full kernel WFP               ML classifier model
-File watch + enforcer Enterprise SaaS policy      Mobile approvals
-Clipboard/mic/camera Browser ADMX templates
-Approval flow        C#-only service mode
-Enterprise pull sync
-Audit export + DPAPI
-```
-
----
-
-## For contributors — priority order
-
-1. Get minifilter building in CI with WDK container (hard).
-2. WiX installer with service + start menu (medium).
-3. Linux eBPF loader reading same `config/default.json` (medium).
-4. Replace heuristic scorer with lightweight ONNX model (research).
-
----
-
-## Document map
-
-| Doc | Purpose |
-|-----|---------|
-| [INSTALLATION.md](INSTALLATION.md) | How to install |
-| [USER_GUIDE.md](USER_GUIDE.md) | How to use |
-| [CONFIGURATION.md](CONFIGURATION.md) | Every config key |
-| [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | When things break |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | How it is built |
+- Windows Hello approvals, signed by a key the service can verify
+- Reviving the kernel filter for block-before-open (see [experimental/](../experimental/README.md))
+- Company fleet deployment
+- A trained classifier for unknown AI apps
+- Linux and macOS agents

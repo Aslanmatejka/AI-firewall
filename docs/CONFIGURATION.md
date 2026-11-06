@@ -76,12 +76,10 @@ You can also add/remove folders from the dashboard UI without editing JSON.
 
 ---
 
-## Network & kernel features
+## IPC
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| `wfp_enabled` | boolean | `true` | Use Windows Filtering Platform before `netsh` fallback |
-| `minifilter_enabled` | boolean | `true` | Try to connect to kernel minifilter comm port (harmless if driver not installed) |
 | `named_pipe_enabled` | boolean | `true` | Local IPC pipe `\\.\pipe\AiShield` for tools/tests |
 
 ---

@@ -1,0 +1,10 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Vendored packages and build output that older commits tracked"
+paths = [
+  '''(^|/)node_modules/''',
+  '''(^|/)(bin|obj)/''',
+  '''__pycache__/''',
+]

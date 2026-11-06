@@ -56,8 +56,6 @@
   "camera_policy": "ask",
   "encrypt_db_at_rest": true,
   "named_pipe_enabled": true,
-  "wfp_enabled": true,
-  "minifilter_enabled": true,
   "ml_heuristics_enabled": true,
   "ml_heuristic_threshold": 65,
   "enterprise_policy_url": "",

@@ -44,21 +44,21 @@ public sealed class PermissionManager : IDisposable
     public void LogEvent(ShieldEvent evt)
     {
         lock (_lock)
-        using (var conn = Open())
-        {
-            conn.Execute(
-                "INSERT INTO audit_log (timestamp, app_name, resource_type, resource, action, decision, message) VALUES (@ts, @app, @type, @res, @act, @dec, @msg)",
-                new
-                {
-                    ts = evt.Timestamp.ToString("O"),
-                    app = evt.SourceApp,
-                    type = evt.ResourceType.ToString().ToLower(),
-                    res = evt.Resource,
-                    act = evt.Action.ToString().ToLower(),
-                    dec = evt.UserDecision,
-                    msg = evt.Message,
-                });
-        }
+            using (var conn = Open())
+            {
+                conn.Execute(
+                    "INSERT INTO audit_log (timestamp, app_name, resource_type, resource, action, decision, message) VALUES (@ts, @app, @type, @res, @act, @dec, @msg)",
+                    new
+                    {
+                        ts = evt.Timestamp.ToString("O"),
+                        app = evt.SourceApp,
+                        type = evt.ResourceType.ToString().ToLower(),
+                        res = evt.Resource,
+                        act = evt.Action.ToString().ToLower(),
+                        dec = evt.UserDecision,
+                        msg = evt.Message,
+                    });
+            }
     }
 
     public void LogDetection(string appName, int pid, string message)
@@ -71,8 +71,8 @@ public sealed class PermissionManager : IDisposable
     public int GetAuditCount()
     {
         lock (_lock)
-        using (var conn = Open())
-            return conn.QueryScalar<int>("SELECT COUNT(*) FROM audit_log");
+            using (var conn = Open())
+                return conn.QueryScalar<int>("SELECT COUNT(*) FROM audit_log");
     }
 
     private SqliteConnection Open()

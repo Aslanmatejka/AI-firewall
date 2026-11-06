@@ -98,7 +98,6 @@ def _simulate_approval(service: Any, req: dict[str, Any]) -> dict[str, Any]:
     resource_path = req.get("resource_path", "api.openai.com")
     app_pid = int(req.get("pid", 9999))
 
-    pending_before = len(service.event_bus.get_pending())
     holder: dict[str, Any] = {}
 
     def worker() -> None:

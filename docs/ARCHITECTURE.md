@@ -17,14 +17,9 @@ Technical overview for developers and IT admins. End users should read [USER_GUI
 │  EventBus · PolicyResolver · PermissionManager (SQLite+DPAPI)  │
 │  ProcessMonitor · NetworkFirewall · FileGuard · FileEnforcer   │
 │  ClipboardGuard · ScreenshotGuard · DeviceGuard/Enforcer     │
-│  BrowserProtection · EnterprisePolicyClient · MinifilterBridge │
-└────────────┬───────────────────────────────┬─────────────────┘
-             │                               │
-   ┌─────────▼─────────┐           ┌─────────▼─────────┐
-   │  WFP (fwpuclnt)   │           │ Minifilter driver  │
-   │  netsh fallback   │           │ (optional, kernel) │
-   └───────────────────┘           └────────────────────┘
-             │
+│  BrowserProtection · EnterprisePolicyClient                   │
+└────────────┬────────────────────────────────────────────────┘
+             │ netsh advfirewall
    ┌─────────▼─────────────────────────────────────────┐
    │              Windows 10 / 11                        │
    └───────────────────────────────────────────────────┘
@@ -59,7 +54,7 @@ If policy is **ask**, `EventBus.request_approval()` blocks until dashboard `/api
 
 ### Network firewall
 - `psutil` TCP connections → match `ai_domains`
-- Block path: WFP user-mode (`wfp_bridge.py`) → `netsh advfirewall` fallback
+- Block path: `netsh advfirewall` rules
 - Ask/block triggers approval or process terminate
 
 ### File protection (dual layer)
@@ -67,7 +62,6 @@ If policy is **ask**, `EventBus.request_approval()` blocks until dashboard `/api
 |-------|-----------|---------------------|
 | File guard | `watchdog` directory events | No — detects activity |
 | File enforcer | Scans AI process open handles | Partial — active handles |
-| Minifilter (optional) | Kernel IRP_MJ_CREATE | Yes — when driver loaded |
 
 ### Clipboard
 - `AddClipboardFormatListener` via ctypes message-only window
@@ -87,7 +81,6 @@ If policy is **ask**, `EventBus.request_approval()` blocks until dashboard `/api
 |---------|-----|
 | HTTP `:9470` | Dashboard REST API |
 | Named pipe | Local tools, `simulate_approval`, WPF fallback |
-| Minifilter port | Kernel ↔ user policy sync + file queries |
 
 ---
 
@@ -150,7 +143,7 @@ CI: `.github/workflows/ci.yml` — Python tests + dotnet build on Windows.
 
 ## Future work
 
-See [NEXT.md](NEXT.md) — kernel signing, Linux eBPF, enterprise SaaS, MSI installer.
+See [NEXT.md](NEXT.md) for the rebuild plan.
 
 ---
 

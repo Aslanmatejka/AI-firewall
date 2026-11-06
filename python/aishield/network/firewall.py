@@ -17,11 +17,6 @@ from ..permissions.resolver import PolicyResolver
 
 logger = logging.getLogger(__name__)
 
-try:
-    from ..native.wfp_bridge import get_engine as get_wfp_engine
-except ImportError:
-    get_wfp_engine = None  # type: ignore[assignment]
-
 
 class NetworkFirewall:
     def __init__(
@@ -45,8 +40,6 @@ class NetworkFirewall:
         self._domain_cache: dict[str, bool] = {}
         self._blocked_rules: set[str] = {}
         self._domain_to_ips: dict[str, set[str]] = {}
-        self._wfp_blocked_ips: set[str] = set()
-        self._use_wfp = bool(config.get("wfp_enabled", True))
 
     @property
     def connections(self) -> list[NetworkConnection]:
@@ -70,11 +63,6 @@ class NetworkFirewall:
         self._running = False
         if self._thread:
             self._thread.join(timeout=5)
-        if get_wfp_engine is not None:
-            try:
-                get_wfp_engine().close()
-            except Exception as e:
-                logger.debug("WFP engine close: %s", e)
 
     def _is_ai_domain(self, host: str) -> bool:
         host = host.lower().rstrip(".")
@@ -88,7 +76,7 @@ class NetworkFirewall:
         return False
 
     def _resolve_host(self, addr: str) -> str:
-        if not addr or addr in ("*", "0.0.0.0", "::"):
+        if not addr or addr in ("*", "0.0.0.0", "::"):  # noqa: S104
             return ""
         ip = addr.split(":")[0] if ":" in addr and "." in addr else addr
         try:
@@ -177,15 +165,7 @@ class NetworkFirewall:
         )
 
     def _block_ip(self, ip: str, domain: str = "") -> bool:
-        """Try WFP user-mode filter first, then netsh advfirewall."""
-        if self._use_wfp and get_wfp_engine is not None:
-            engine = get_wfp_engine()
-            if engine.available:
-                label = f"AiShield-WFP-{domain}-{ip}" if domain else None
-                if engine.block_outbound_ip(ip, label=label):
-                    self._wfp_blocked_ips.add(ip)
-                    return True
-
+        """Add a Windows Firewall rule through netsh."""
         rule_name = f"AiShield-Block-{domain.replace('.', '-')}-{ip.replace('.', '-')}" if domain else f"AiShield-Block-{ip.replace('.', '-')}"
         if rule_name in self._blocked_rules:
             return True
@@ -207,12 +187,6 @@ class NetworkFirewall:
 
     def _unblock_ip(self, ip: str, domain: str = "") -> bool:
         removed = False
-        if ip in self._wfp_blocked_ips and get_wfp_engine is not None:
-            if get_wfp_engine().unblock_outbound_ip(ip):
-                self._wfp_blocked_ips.discard(ip)
-                removed = True
-
-        prefix = f"AiShield-Block-{domain.replace('.', '-')}-" if domain else f"AiShield-Block-{ip.replace('.', '-')}"
         for rule_name in list(self._blocked_rules):
             if domain and not rule_name.startswith(f"AiShield-Block-{domain.replace('.', '-')}-"):
                 continue
@@ -230,7 +204,7 @@ class NetworkFirewall:
         return removed
 
     def block_domain(self, domain: str) -> bool:
-        """Block outbound traffic to a domain (WFP preferred, netsh fallback)."""
+        """Block outbound traffic to a domain's current IPs through netsh."""
         ips = self._resolve_domain_ips(domain)
         if not ips:
             logger.warning("No IPs resolved for domain %s", domain)
@@ -242,12 +216,7 @@ class NetworkFirewall:
         return ok
 
     def unblock_domain(self, domain: str) -> bool:
-        ips = self._domain_to_ips.get(domain, set())
         removed = 0
-        if get_wfp_engine is not None and ips:
-            removed += get_wfp_engine().unblock_domain_ips(domain, ips)
-            self._wfp_blocked_ips -= ips
-
         prefix = f"AiShield-Block-{domain.replace('.', '-')}-"
         for rule_name in list(self._blocked_rules):
             if not rule_name.startswith(prefix):
@@ -268,6 +237,5 @@ class NetworkFirewall:
         return {
             "ai_connections": len(self._connections),
             "blocked_rules": len(self._blocked_rules),
-            "wfp_blocked_ips": len(self._wfp_blocked_ips),
             "total_seen": len(self._seen),
         }

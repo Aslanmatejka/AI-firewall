@@ -12,7 +12,7 @@ You need all of this on a Windows 10 or Windows 11 PC:
 |-------------|--------------|------------|
 | **Python 3.10+** | Open PowerShell, run `python --version` | Install from [python.org](https://www.python.org/downloads/). Tick **“Add Python to PATH”** during install. |
 | **Internet** (first run only) | — | Needed to `pip install` dependencies |
-| **Administrator** (optional) | — | Required only for firewall domain blocking, hosts-file blocking, and kernel driver install |
+| **Administrator** (optional) | — | Required only for firewall domain blocking and hosts-file blocking |
 
 You do **not** need Python knowledge. You do **not** need to edit code.
 
@@ -81,7 +81,7 @@ The desktop app is a **remote control** for the Python service. The service must
 .\scripts\launch-dashboard.ps1
 ```
 
-Requires [.NET 8 SDK](https://dotnet.microsoft.com/download). The script builds and opens the WPF window automatically.
+Requires [.NET 10 SDK](https://dotnet.microsoft.com/download). The script builds and opens the WPF window automatically.
 
 If the desktop app says **“Service Offline”**, go back to Terminal 1 — the Python service is not running.
 
@@ -131,9 +131,6 @@ These are **not** required for basic use.
 |--------|--------|--------------|
 | `.\scripts\configure-browser-gpo.ps1` | Yes | Blocks AI domains in the Windows hosts file |
 | `.\scripts\start-policy-server.ps1` | No | Runs a local enterprise policy server on port 9480 |
-| `.\scripts\install-minifilter.ps1` | Yes | Installs kernel file filter (needs WDK-built driver — see [NEXT.md](NEXT.md)) |
-| `.\scripts\build-native.ps1` | No | Builds Rust native DLL (optional) |
-| `.\native\minifilter\build.ps1` | No | Builds minifilter driver (needs Visual Studio + WDK) |
 
 ---
 

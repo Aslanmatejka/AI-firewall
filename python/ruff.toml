@@ -1,0 +1,14 @@
+target-version = "py312"
+line-length = 120
+
+[lint]
+select = ["E9", "F", "B", "S", "PLE"]
+ignore = [
+    "S101",  # assert is fine in tests
+    "S110",  # the Python engine is replaced at M5; C# guards report failures instead
+    "S603",  # subprocess calls here use fixed argument lists
+    "S607",  # netsh, powershell and nvidia-smi are resolved from PATH on purpose until M4
+]
+
+[lint.per-file-ignores]
+"tests/*" = ["S"]

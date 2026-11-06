@@ -9,7 +9,7 @@ Start here. Pick the guide that matches what you are trying to do.
 | Edit settings (`config.json`) | [CONFIGURATION.md](CONFIGURATION.md) |
 | Fix something that is broken | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) |
 | Understand how it works internally | [ARCHITECTURE.md](ARCHITECTURE.md) |
-| See what is not built yet | [NEXT.md](NEXT.md) |
+| See the rebuild plan and what v1 will promise | [NEXT.md](NEXT.md) |
 
 ## 30-second version
 

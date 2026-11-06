@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import logging
 from pathlib import Path
 from typing import Any
@@ -154,7 +153,7 @@ class ShieldActions:
                 self._service.policy_resolver,
             )
             self._service._file_guard.start()
-            self._service.reload_config(sync_minifilter=True)
+            self._service.reload_config()
         except Exception as e:
             logger.warning("Could not reload file guard: %s", e)
 
