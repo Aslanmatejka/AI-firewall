@@ -1,0 +1,7 @@
+<Project>
+  <!-- CiTesting builds add hooks that let CI drive the secure prompt. Release builds must never contain them. -->
+  <PropertyGroup Condition="'$(Configuration)' == 'CiTesting'">
+    <DefineConstants>$(DefineConstants);AISHIELD_TEST_HOOKS</DefineConstants>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+</Project>

@@ -1,7 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;
-using AiShield.Dashboard.Services;
+using AiShield.Core.Ipc;
 using AiShield.Dashboard.ViewModels;
 using WinForms = System.Windows.Forms;
 

@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, production-hardening]
+    branches: [main, production-hardening, "m*-*"]
   pull_request:
 
 permissions:
@@ -45,6 +45,8 @@ jobs:
         run: dotnet format csharp/AiShield.sln --verify-no-changes --no-restore
       - name: Build
         run: dotnet build csharp/AiShield.sln -c Release --no-restore
+      - name: Unit tests
+        run: dotnet test --project csharp/AiShield.Core.Tests/AiShield.Core.Tests.csproj -c Release --no-build
       - name: Fail on vulnerable packages
         shell: pwsh
         run: |
@@ -96,6 +98,37 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: desktop-smoke
+          path: artifacts/
+          if-no-files-found: ignore
+
+  service-integration:
+    # Installs the service on an elevated runner and attacks it from a non-admin token.
+    runs-on: windows-latest
+    timeout-minutes: 30
+    env:
+      DOTNET_NOLOGO: "1"
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          global-json-file: global.json
+      - name: Release build contains no test hooks
+        shell: pwsh
+        run: |
+          ./scripts/ci/publish.ps1 -Configuration Release -Output release
+          ./scripts/ci/assert-no-test-hooks.ps1 -Path release
+      - name: Publish the CI test build
+        shell: pwsh
+        run: ./scripts/ci/publish.ps1 -Configuration CiTesting -Output staging
+      - name: Install, attack and uninstall the service
+        shell: pwsh
+        run: ./scripts/ci/service-integration.ps1 -Staging staging -Artifacts artifacts
+      - name: Keep logs and screenshots
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: service-integration
           path: artifacts/
           if-no-files-found: ignore
 

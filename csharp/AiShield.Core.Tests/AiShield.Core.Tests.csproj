@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>AiShield.Core.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AiShield.Core\AiShield.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\config\default.json" Link="default.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

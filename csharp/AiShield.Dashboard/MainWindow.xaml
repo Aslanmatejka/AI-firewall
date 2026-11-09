@@ -438,6 +438,32 @@
                             </Style>
                         </StackPanel.Style>
 
+                        <Border Style="{StaticResource Card}" Margin="0,0,0,22"
+                                Visibility="{Binding HasGuards, Converter={StaticResource BoolVis}}">
+                            <StackPanel>
+                                <TextBlock Text="What AI Firewall is doing" Style="{StaticResource Heading2}"/>
+                                <ItemsControl ItemsSource="{Binding Guards}" Margin="0,10,0,0">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="0,8,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="190"/>
+                                                    <ColumnDefinition Width="110"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
+                                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                                <TextBlock Grid.Column="1" Text="{Binding State}"
+                                                           Foreground="{StaticResource TextSecondaryBrush}"/>
+                                                <TextBlock Grid.Column="2" Text="{Binding Reason}" TextWrapping="Wrap"
+                                                           Foreground="{StaticResource TextMutedBrush}"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+
                         <UniformGrid Columns="4" Margin="0,0,0,22">
                             <Button Style="{StaticResource StatCardButton}" Margin="0,0,8,0"
                                     Background="{StaticResource StatCyanBgBrush}"

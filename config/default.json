@@ -41,7 +41,11 @@
     { "name": "LocalAI", "patterns": ["localai"] },
     { "name": "GPT4All", "patterns": ["gpt4all"] },
     { "name": "KoboldCpp", "patterns": ["koboldcpp"] },
-    { "name": "Text Generation WebUI", "patterns": ["oobabooga", "text-generation"] }
+    { "name": "Text Generation WebUI", "patterns": ["oobabooga", "text-generation"] },
+    { "name": "Claude Code", "patterns": [], "command_line_patterns": ["@anthropic-ai/claude-code"] },
+    { "name": "Codex CLI", "patterns": ["codex.exe"], "command_line_patterns": ["@openai/codex"] },
+    { "name": "Gemini CLI", "patterns": [], "command_line_patterns": ["@google/gemini-cli"] },
+    { "name": "Aider", "patterns": ["aider.exe"], "command_line_patterns": ["-m aider", "/site-packages/aider/"] }
   ],
   "ai_extension_patterns": [
     "chatgpt", "claude", "copilot", "merlin", "monica", "grammarly-go",

@@ -4,13 +4,15 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Windows.Input;
 using System.Windows.Threading;
+using AiShield.Core.Ipc;
 using AiShield.Dashboard.Services;
 
 namespace AiShield.Dashboard.ViewModels;
 
 public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
 {
-    private readonly ShieldApiClient _api;
+    private readonly BackendSwitch _api;
+    private readonly HashSet<string> _announcedRequests = [];
     private readonly DispatcherTimer _timer;
     private int _selectedPage;
     private bool _isConnected;
@@ -30,7 +32,8 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
 
     public MainViewModel()
     {
-        _api = new ShieldApiClient();
+        _api = new BackendSwitch();
+        Guards = new ObservableCollection<GuardStatusDto>();
         AiProcesses = new ObservableCollection<AiProcessDto>();
         NetworkConnections = new ObservableCollection<NetworkConnDto>();
         Events = new ObservableCollection<EventDto>();
@@ -85,7 +88,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             if (Interlocked.CompareExchange(ref _refreshRunning, 0, 0) != 0) return;
             SetConnected(await _api.IsOnlineAsync());
-            if (IsConnected && (DateTime.UtcNow - _lastFullRefresh).TotalSeconds >= 20)
+            if (IsConnected && (DateTime.UtcNow - _lastFullRefresh).TotalSeconds >= 10)
                 await RefreshAsync(silent: true);
         };
         _timer.Start();
@@ -131,6 +134,13 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
     public ObservableCollection<ExtensionDto> Extensions { get; }
     public ObservableCollection<ModelFileDto> ModelFiles { get; }
     public ObservableCollection<AppPolicyDto> AppPolicies { get; }
+    public ObservableCollection<GuardStatusDto> Guards { get; }
+    public bool HasGuards => Guards.Count > 0;
+
+    /// <summary>Raised once for each new request waiting for the user.</summary>
+    public event Action<AccessRequestDto>? NewPendingRequest;
+
+    public Task NotifyExitingAsync() => _api.NotifyExitingAsync();
 
     public string StatusMessage
     {
@@ -267,6 +277,9 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
             ReplaceCollection(Events, status.RecentEvents);
             ReplaceCollection(ProtectedFolders, status.ProtectedFolders);
             ReplaceCollection(PendingRequests, status.PendingRequests);
+            ReplaceCollection(Guards, status.Guards ?? []);
+            OnPropertyChanged(nameof(HasGuards));
+            AnnounceNewRequests(status.PendingRequests);
             LastUpdated = DateTime.Now.ToString("HH:mm:ss");
             await LoadPageDataAsync();
             _lastFullRefresh = DateTime.UtcNow;
@@ -288,7 +301,23 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
     private void SetConnected(bool online)
     {
         IsConnected = online;
-        ConnectionStatus = online ? "Service running" : "Service offline";
+        ConnectionStatus = _api.Kind switch
+        {
+            BackendKind.Service => "Service running",
+            BackendKind.Python => "Running (Python engine)",
+            _ => "Service offline",
+        };
+    }
+
+    private void AnnounceNewRequests(IEnumerable<AccessRequestDto> pending)
+    {
+        var current = pending.ToList();
+        _announcedRequests.IntersectWith(current.Select(r => r.Id));
+        foreach (var request in current)
+        {
+            if (_announcedRequests.Add(request.Id))
+                NewPendingRequest?.Invoke(request);
+        }
     }
 
     private async Task ExportAuditAsync()
