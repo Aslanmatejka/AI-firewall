@@ -92,7 +92,9 @@ public sealed class NativeProcessTests
 public sealed class FileSystemTrustTests
 {
     private static readonly SecurityIdentifier Me = WindowsIdentity.GetCurrent().User!;
-    private static readonly SecurityIdentifier[] TrustMe = [Me];
+
+    // An elevated administrator's new folders are owned by the Administrators group rather than the user.
+    private static readonly SecurityIdentifier[] TrustMe = [Me, WellKnown.Administrators];
 
     [Fact]
     public void CreatesALockedDownFolder()
@@ -103,7 +105,7 @@ public sealed class FileSystemTrustTests
 
         Assert.True(SecureDataDirectory.IsLockedDown(data, TrustMe));
         var rules = new DirectoryInfo(data).GetAccessControl().GetAccessRules(true, true, typeof(SecurityIdentifier));
-        Assert.All(rules.Cast<FileSystemAccessRule>(), r => Assert.Equal(Me, r.IdentityReference));
+        Assert.All(rules.Cast<FileSystemAccessRule>(), r => Assert.Contains((SecurityIdentifier)r.IdentityReference, TrustMe));
     }
 
     [Fact]

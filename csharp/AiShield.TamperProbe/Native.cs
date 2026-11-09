@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using System.Security.AccessControl;
 using System.Security.Principal;
 using Microsoft.Win32.SafeHandles;
 
@@ -10,6 +11,8 @@ internal static unsafe partial class BasicUser
 {
     private const uint LuaToken = 0x4;
     private const uint DisableMaxPrivilege = 0x1;
+    private const int TokenOwner = 4;
+    private const int TokenDefaultDacl = 6;
     private const int TokenIntegrityLevel = 25;
     private const uint SeGroupIntegrity = 0x20;
     private const uint StartfUseStdHandles = 0x100;
@@ -27,9 +30,40 @@ internal static unsafe partial class BasicUser
                 throw new Win32Exception(Marshal.GetLastPInvokeError(), "CreateRestrictedToken");
             using (limited)
             {
+                OwnNewObjectsAsUser(limited);
                 SetMediumIntegrity(limited);
                 return RunWithToken(limited, childArgs);
             }
+        }
+    }
+
+    /// <summary>
+    /// An administrator's token makes Administrators the owner of new objects and gives only them access.
+    /// In the limited token that group is deny-only, so the child couldn't use what it creates. UAC's
+    /// limited tokens hand both to the user instead, and so does this.
+    /// </summary>
+    private static void OwnNewObjectsAsUser(SafeAccessTokenHandle token)
+    {
+        var user = WindowsIdentity.GetCurrent().User!;
+        var userSid = new byte[user.BinaryLength];
+        user.GetBinaryForm(userSid, 0);
+
+        var acl = new RawAcl(GenericAcl.AclRevision, 2);
+        acl.InsertAce(0, new CommonAce(AceFlags.None, AceQualifier.AccessAllowed, unchecked((int)0x10000000), user, false, null));
+        acl.InsertAce(1, new CommonAce(AceFlags.None, AceQualifier.AccessAllowed, unchecked((int)0x10000000),
+            new SecurityIdentifier(WellKnownSidType.LocalSystemSid, null), false, null));
+        var aclBytes = new byte[acl.BinaryLength];
+        acl.GetBinaryForm(aclBytes, 0);
+
+        fixed (byte* sid = userSid)
+        fixed (byte* dacl = aclBytes)
+        {
+            var owner = (nint)sid;
+            if (!SetTokenInformation(token, TokenOwner, &owner, (uint)sizeof(nint)))
+                throw new Win32Exception(Marshal.GetLastPInvokeError(), "SetTokenInformation(TokenOwner)");
+            var defaultDacl = (nint)dacl;
+            if (!SetTokenInformation(token, TokenDefaultDacl, &defaultDacl, (uint)sizeof(nint)))
+                throw new Win32Exception(Marshal.GetLastPInvokeError(), "SetTokenInformation(TokenDefaultDacl)");
         }
     }
 
@@ -77,13 +111,17 @@ internal static unsafe partial class BasicUser
         }
         CloseHandle(info.Thread);
 
+        string text;
         using (var output = new FileStream(new SafeFileHandle(read, ownsHandle: true), FileAccess.Read))
         using (var reader = new StreamReader(output))
-            Console.Write(reader.ReadToEnd());
+            text = reader.ReadToEnd();
+        Console.Write(text);
 
         WaitForSingleObject(info.Process, Infinite);
         GetExitCodeProcess(info.Process, out var exitCode);
         CloseHandle(info.Process);
+        if (text.Length == 0 && exitCode != 0)
+            Console.Error.WriteLine($"The limited-token child exited with code 0x{exitCode:x8} and wrote nothing");
         return (int)exitCode;
     }
 

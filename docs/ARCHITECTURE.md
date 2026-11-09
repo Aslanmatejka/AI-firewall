@@ -84,13 +84,40 @@ If policy is **ask**, `EventBus.request_approval()` blocks until dashboard `/api
 
 ---
 
-## C# stack
+## C# service (being built, M2)
 
-| Project | Role |
-|---------|------|
-| `AiShield.Core` | Models and starting points for the C# engine; nothing runs it yet |
-| `AiShield.Service` | Empty until M2; nothing installs it |
-| `AiShield.Dashboard` | WPF UI, an HTTP client of the Python API |
+The replacement for the Python engine. It isn't installable yet: the installer arrives in M3.
+
+| Project | Runs as | Role |
+|---------|---------|------|
+| `AiShield.Service` | SYSTEM | Holds policy and decides. Hosts the pipe, the guards and the approval queue |
+| `AiShield.Dashboard` | The user, once per session | Main window and tray. The service starts it at sign-in and restarts it if it's killed |
+| `AiShield.Consent` | SYSTEM, without privileges | The secure prompt, on a private desktop in the user's session |
+| `AiShield.Core` | (library) | Policy store, resolver, approval queue, detection and the pipe protocol |
+| `AiShield.TamperProbe` | (CI only) | Attacks an installed service from a non-admin token. Never shipped |
+
+### Who may do what
+
+| Caller | Read status | Tighten or deny | Loosen or allow |
+|--------|-------------|-----------------|-----------------|
+| Installed desktop app | Yes | Yes | Only after the user confirms on the secure prompt |
+| Any other program | No | No | No |
+| Administrator | Yes, and can change anything | | |
+
+- **Trusted desktop app:** the service trusts a caller only when Windows reports its program as `dashboard\AiShield.Dashboard.exe` inside the install folder, and only when that folder is protected from ordinary users. A copy elsewhere, or a build run from the repo, isn't trusted.
+- **Why the secure prompt:** software running as the user can inject into or drive the desktop app, so being the desktop app isn't enough to loosen anything.
+- **The prompt:** it runs as SYSTEM on its own desktop, like UAC, so the user's programs can't see, click or read it. `Allow` only works after two seconds.
+- **The pipe:** it refuses network clients. Only SYSTEM and administrators can create instances of it, and clients check the service owns it before sending anything.
+- **Data:** policy and audit live in `%ProgramData%\AiShield`, which only SYSTEM and administrators can open. Anything planted there first is moved aside.
+
+### Guards
+
+Each guard reports `active`, `degraded`, `unavailable` or `off`, with a reason. `active` needs evidence: the process guard starts a harmless program and only reports active once event tracing has reported it.
+
+| Guard | State |
+|-------|-------|
+| AI apps | Event tracing of process starts, plus a 10-second scan. Recognizes command-line agents through their interpreter and counts what an AI app starts as part of it |
+| Network, files, microphone and camera, clipboard | Unavailable: not ported yet |
 
 ---
 
@@ -136,6 +163,10 @@ python -m unittest discover -s tests -v    # Includes booting the real service
 ```
 
 `.\scripts\smoke-dashboard.ps1` launches the real desktop app and fails if it crashes or logs an error.
+
+The C# tests run with `dotnet test --project csharp/AiShield.Core.Tests/AiShield.Core.Tests.csproj`.
+
+CI also installs the service on an elevated runner with `scripts/ci/service-integration.ps1`, attacks it from a non-admin token and uninstalls it. Those scripts change system settings, so they refuse to run unless `CI` is set: don't run them on your own PC.
 
 CI (`.github/workflows/`) runs all of this on Windows, plus lint, format, dependency and secret checks and CodeQL.
 

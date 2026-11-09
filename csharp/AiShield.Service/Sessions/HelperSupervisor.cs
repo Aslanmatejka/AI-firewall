@@ -101,8 +101,9 @@ internal sealed class HelperSupervisor(ServiceLayout layout, ILogger<HelperSuper
 
         if (exitCode == HelperExitCodes.AnotherInstanceRunning)
         {
-            // The user started it themselves. Check again later in case they close that one.
-            slot.NextAttempt = now + TimeSpan.FromSeconds(10);
+            // A copy is already running, started by the user or left from before a service restart.
+            // Check again later in case it closes.
+            slot.NextAttempt = now + TimeSpan.FromSeconds(60);
             return;
         }
 

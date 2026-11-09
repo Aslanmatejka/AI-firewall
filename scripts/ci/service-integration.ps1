@@ -43,8 +43,8 @@ function Wait-Until([scriptblock]$Condition, [int]$Seconds, [string]$What) {
 function Invoke-Client([string]$Op, [hashtable]$Arguments) {
     $argv = @('as-basic-user', 'client', $Op)
     if ($Arguments) { $argv += ($Arguments | ConvertTo-Json -Compress) }
-    $output = & $TrustedProbe @argv
-    if ($LASTEXITCODE -ne 0) { throw "Client $Op got no answer: $output" }
+    $output = & $TrustedProbe @argv 2>&1
+    if ($LASTEXITCODE -ne 0) { throw "Client $Op got no answer (exit $LASTEXITCODE): $output" }
     return ($output | Select-Object -Last 1) | ConvertFrom-Json
 }
 
@@ -100,17 +100,21 @@ Check 'killed desktop app returns within 10 seconds' {
 }
 
 Check 'probe really runs without admin rights' {
-    $me = & $Probe as-basic-user whoami | ConvertFrom-Json
-    if ($me.admin -or $me.integrity -gt 8192) { throw "admin=$($me.admin) integrity=$($me.integrity)" }
+    $raw = & $Probe as-basic-user whoami 2>&1
+    if ($LASTEXITCODE -ne 0) { throw "the probe failed: $raw" }
+    $me = $raw | ConvertFrom-Json
+    if ($me.admin -ne $false -or $me.integrity -ne 8192) { throw "admin=$($me.admin) integrity=$($me.integrity)" }
     "admin=$($me.admin), integrity=0x$('{0:x}' -f $me.integrity)"
 }
 
 Check 'every tamper attempt fails without admin rights' {
     Set-ConsentAnswer 'deny 3'
-    $output = & $Probe as-basic-user attack $Install
+    $output = & $Probe as-basic-user attack $Install 2>&1
+    $code = $LASTEXITCODE
     $output | Set-Content (Join-Path $Artifacts 'tamper-probe.txt')
     $output | Out-Host
-    if ($LASTEXITCODE -ne 0) { throw ($output | Where-Object { $_ -like 'ALLOWED*' }) -join '; ' }
+    $blocked = @($output | Where-Object { $_ -like 'BLOCKED*' }).Count
+    if ($code -ne 0 -or $blocked -lt 10) { throw "exit $code, $blocked blocked: $((@($output | Where-Object { $_ -notlike 'BLOCKED*' })) -join '; ')" }
     "$(@($output | Where-Object { $_ -like 'BLOCKED*' }).Count) attempts blocked"
 }
 
@@ -185,7 +189,7 @@ Check 'secure prompt is out of reach of the user''s programs' {
     $shown = Wait-Until { Get-Content (Join-Path $TestDir 'consent-shown.txt') -ErrorAction SilentlyContinue } 30 'the secure prompt'
     $desktop = $shown[0]
     Start-Sleep -Seconds 2
-    $isolation = & $Probe as-basic-user consent-isolation $desktop
+    $isolation = & $Probe as-basic-user consent-isolation $desktop 2>&1
     $isolation | Set-Content (Join-Path $Artifacts 'consent-isolation.txt')
     $isolation | Out-Host
     $isolated = $LASTEXITCODE -eq 0
