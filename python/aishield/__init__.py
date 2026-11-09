@@ -1,3 +1,3 @@
-"""AI Firewall — protect your data from unauthorized AI access."""
+"""AI Firewall: control what AI software can access on your PC."""
 
-__version__ = "0.1.0"
+__version__ = "0.3.0"

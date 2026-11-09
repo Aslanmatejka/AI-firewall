@@ -1,4 +1,7 @@
+using System.IO;
+using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
@@ -6,36 +9,25 @@ namespace AiShield.Dashboard.Services;
 
 public sealed class ShieldApiClient : IDisposable
 {
-    private readonly HttpClient _http;
+    private const string ServiceNotRunning = "The AI Firewall service isn't running";
+    private static readonly string TokenPath = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AiShield", "api-token.json");
     private static readonly JsonSerializerOptions JsonOpts = new()
     {
         PropertyNameCaseInsensitive = true,
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
     };
 
-    public string BaseUrl { get; }
+    private readonly HttpClient _http = new() { Timeout = TimeSpan.FromSeconds(30) };
+    private ApiEndpoint? _endpoint;
 
-    public ShieldApiClient(string baseUrl = "http://127.0.0.1:9470")
-    {
-        BaseUrl = baseUrl.TrimEnd('/');
-        _http = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
-    }
+    private sealed record ApiEndpoint(string BaseUrl, string Token);
 
     public async Task<bool> IsOnlineAsync()
     {
-        try
-        {
-            var res = await _http.GetAsync($"{BaseUrl}/api/health");
-            if (res.IsSuccessStatusCode) return true;
-        }
-        catch { /* fall through to named pipe */ }
-
-        try
-        {
-            using var pipe = new NamedPipeClient();
-            return await pipe.IsAvailableAsync();
-        }
-        catch { return false; }
+        using var response = await SendAsync(HttpMethod.Get, "/api/health", null);
+        if (response is null || !response.IsSuccessStatusCode) return false;
+        return ReadBool(await response.Content.ReadAsStringAsync(), "ok");
     }
 
     public async Task<StatusDto?> GetStatusAsync() => await GetAsync<StatusDto>("/api/status");
@@ -109,37 +101,119 @@ public sealed class ShieldApiClient : IDisposable
     public Task<ActionResultDto> RestoreDefaultsAsync()
         => PostAsync("/api/restore-defaults", null);
 
-    public string GetAuditExportUrl() => $"{BaseUrl}/api/audit/export";
+    public async Task<string?> GetAuditCsvAsync()
+    {
+        using var response = await SendAsync(HttpMethod.Get, "/api/audit/export", null);
+        if (response is null || !response.IsSuccessStatusCode) return null;
+        return await response.Content.ReadAsStringAsync();
+    }
 
     private async Task<T?> GetAsync<T>(string path)
     {
-        var res = await _http.GetAsync($"{BaseUrl}{path}");
-        if (!res.IsSuccessStatusCode) return default;
-        return JsonSerializer.Deserialize<T>(await res.Content.ReadAsStringAsync(), JsonOpts);
+        using var response = await SendAsync(HttpMethod.Get, path, null);
+        if (response is null || !response.IsSuccessStatusCode) return default;
+        try
+        {
+            return JsonSerializer.Deserialize<T>(await response.Content.ReadAsStringAsync(), JsonOpts);
+        }
+        catch (JsonException ex)
+        {
+            DashboardLog.Error($"Unexpected response from {path}", ex);
+            return default;
+        }
     }
 
     private async Task<ActionResultDto> PostAsync(string path, object? body)
     {
+        var json = body is null ? null : JsonSerializer.Serialize(body, JsonOpts);
+        using var response = await SendAsync(HttpMethod.Post, path, json);
+        if (response is null) return new ActionResultDto { Ok = false, Error = ServiceNotRunning };
+
+        var text = await response.Content.ReadAsStringAsync();
+        var ok = response.IsSuccessStatusCode && ReadBool(text, "ok");
+        return new ActionResultDto
+        {
+            Ok = ok,
+            Message = ReadString(text, "message"),
+            Error = ok ? null : ReadString(text, "error") ?? ReadString(text, "detail") ?? $"Request failed ({(int)response.StatusCode})",
+        };
+    }
+
+    /// <summary>Returns null if the service can't be reached. Never throws for network failures.</summary>
+    private async Task<HttpResponseMessage?> SendAsync(HttpMethod method, string path, string? json)
+    {
+        _endpoint ??= ReadEndpoint();
+        if (_endpoint is null) return null;
         try
         {
-            HttpResponseMessage res;
-            if (body is null)
-                res = await _http.PostAsync($"{BaseUrl}{path}", null);
-            else
-            {
-                var json = JsonSerializer.Serialize(body, JsonOpts);
-                res = await _http.PostAsync($"{BaseUrl}{path}",
-                    new StringContent(json, Encoding.UTF8, "application/json"));
-            }
-            var text = await res.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<ActionResultDto>(text, JsonOpts) ?? new ActionResultDto();
-            if (res.IsSuccessStatusCode && !result.Ok && string.IsNullOrEmpty(result.Error))
-                result.Ok = true;
-            return result;
+            var response = await SendOnceAsync(_endpoint, method, path, json);
+            if (response.StatusCode != HttpStatusCode.Unauthorized) return response;
+
+            // The service makes a new token each time it starts.
+            response.Dispose();
+            _endpoint = ReadEndpoint();
+            return _endpoint is null ? null : await SendOnceAsync(_endpoint, method, path, json);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
-            return new ActionResultDto { Ok = false, Error = ex.Message };
+            _endpoint = null;
+            return null;
+        }
+    }
+
+    private async Task<HttpResponseMessage> SendOnceAsync(ApiEndpoint endpoint, HttpMethod method, string path, string? json)
+    {
+        using var request = new HttpRequestMessage(method, endpoint.BaseUrl + path);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", endpoint.Token);
+        if (json is not null) request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+        return await _http.SendAsync(request);
+    }
+
+    private static ApiEndpoint? ReadEndpoint()
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(File.ReadAllText(TokenPath));
+            var token = doc.RootElement.GetProperty("token").GetString();
+            var port = doc.RootElement.GetProperty("port").GetInt32();
+            return string.IsNullOrEmpty(token) ? null : new ApiEndpoint($"http://127.0.0.1:{port}", token);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException
+            or KeyNotFoundException or InvalidOperationException or FormatException)
+        {
+            return null;
+        }
+    }
+
+    private static bool ReadBool(string json, string name)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            return doc.RootElement.ValueKind == JsonValueKind.Object
+                && doc.RootElement.TryGetProperty(name, out var value)
+                && value.ValueKind == JsonValueKind.True;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
+    private static string? ReadString(string json, string name)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            return doc.RootElement.ValueKind == JsonValueKind.Object
+                && doc.RootElement.TryGetProperty(name, out var value)
+                && value.ValueKind == JsonValueKind.String
+                ? value.GetString()
+                : null;
+        }
+        catch (JsonException)
+        {
+            return null;
         }
     }
 
@@ -169,7 +243,7 @@ public record EventDto(string Id, string Timestamp, string Severity, string Reso
 public record ProtectedFolderDto(string Name, string Path, string Policy);
 public record StatsDto(PermStatsDto? Permissions, NetStatsDto? Network, int ExtensionsFound);
 public record PermStatsDto(int Grants, int AuditEntries, int Blocked);
-public record NetStatsDto(int AiConnections, int BlockedRules, int TotalSeen);
+public record NetStatsDto(int AiConnections, int TotalSeen);
 public record AuditEntryDto(int Id, string Timestamp, string AppName, string ResourceType, string Resource, string Action, string Decision, string Message);
 public record ExtensionDto(string Browser, string Id, string Name, string Path);
 public record ModelFileDto(string Path, double SizeMb, string Type);

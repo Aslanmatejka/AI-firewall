@@ -1,164 +1,78 @@
-# Installation Guide
+# Installation
 
-Follow these steps in order. Do not skip steps unless the note says it is optional.
+AI Firewall is pre-release and runs from a copy of this repository. There's no installer yet, and it doesn't run as a Windows service. [What's next](NEXT.md) explains the plan.
 
----
+## What you need
 
-## Before you start — checklist
+- Windows 10 or 11
+- [Python 3.12](https://www.python.org/downloads/), with **Add Python to PATH** ticked during setup
+- [.NET 10 SDK](https://dotnet.microsoft.com/download), only for the desktop app
 
-You need all of this on a Windows 10 or Windows 11 PC:
+You don't need administrator rights.
 
-| Requirement | How to check | If missing |
-|-------------|--------------|------------|
-| **Python 3.10+** | Open PowerShell, run `python --version` | Install from [python.org](https://www.python.org/downloads/). Tick **“Add Python to PATH”** during install. |
-| **Internet** (first run only) | — | Needed to `pip install` dependencies |
-| **Administrator** (optional) | — | Required only for firewall domain blocking, hosts-file blocking, and kernel driver install |
+## Set up
 
-You do **not** need Python knowledge. You do **not** need to edit code.
-
----
-
-## Method A — Fastest (recommended for first try)
-
-Open **PowerShell**, go to the project folder, and run:
+In PowerShell, from the project folder:
 
 ```powershell
-cd C:\path\to\firewall
 .\scripts\install.ps1
 ```
 
-That installs dependencies and runs tests.
+This installs the dependencies, runs the tests and, if the .NET 10 SDK is available, builds the desktop app.
 
-Then start the app:
-
-```powershell
-.\scripts\start.ps1
-```
-
-You should see:
-
-```
-AI Firewall is running
-Dashboard: http://127.0.0.1:9470
-```
-
-Open that URL in **Chrome**, **Edge**, or **Firefox**.
-
-### How to know it worked
-
-1. The web page loads (dark dashboard, not “connection refused”).
-2. Top of the page shows **“Firewall Active”** (not “Service Offline”).
-3. Leaving the PowerShell window open keeps the service running. Closing it stops the service.
-
----
-
-## Method B — Manual (if scripts fail)
-
-```powershell
-cd C:\path\to\firewall
-pip install -r python\requirements.txt
-cd python
-python -m aishield
-```
-
-Same dashboard URL: **http://127.0.0.1:9470**
-
----
-
-## Method C — Windows desktop app (WPF)
-
-The desktop app is a **remote control** for the Python service. The service must run first.
-
-**Terminal 1** — start the service:
+## Start
 
 ```powershell
 .\scripts\start.ps1
 ```
 
-**Terminal 2** — start the desktop UI:
+Your browser opens the dashboard and signs you in. Keep the PowerShell window open: closing it stops AI Firewall.
+
+The sign-in link works once, for two minutes. To open the dashboard again later, run:
+
+```powershell
+.\scripts\open-dashboard.ps1
+```
+
+## Desktop app
+
+With AI Firewall running, in a second PowerShell window:
 
 ```powershell
 .\scripts\launch-dashboard.ps1
 ```
 
-Requires [.NET 8 SDK](https://dotnet.microsoft.com/download). The script builds and opens the WPF window automatically.
+If it shows **Service offline**, AI Firewall isn't running yet. It connects on its own once you start it.
 
-If the desktop app says **“Service Offline”**, go back to Terminal 1 — the Python service is not running.
+## Where files live
 
----
+| What | Where |
+|------|-------|
+| Default settings | `config\default.json` in the project |
+| Your changes to the settings | `%APPDATA%\AiShield\user_config.json` |
+| Policies and audit log | `%APPDATA%\AiShield\permissions.db` |
+| Token for the desktop app, only while running | `%APPDATA%\AiShield\api-token.json` |
+| Desktop app error log | `%LOCALAPPDATA%\AiShield\dashboard.log` |
 
-## Method D — Install as Windows Service (always-on, admin)
+## Remove it
 
-Run PowerShell **as Administrator**:
+1. Close the PowerShell window running AI Firewall.
+2. Delete the project folder.
+3. Delete `%APPDATA%\AiShield` and `%LOCALAPPDATA%\AiShield`.
 
-```powershell
-cd C:\path\to\firewall
-.\scripts\install-service.ps1
-```
+### If you used an older version
 
-This will:
-
-1. Copy config to `%ProgramData%\AiShield\config.json`
-2. Install Python packages
-3. Build the C# service
-4. Register **AiShield** as a Windows Service and start it
-
-The C# service supervises the Python backend. Dashboard is still at **http://127.0.0.1:9470**.
-
----
-
-## Method E — Portable package (zip)
+Older versions could change your system in ways this one doesn't undo for you. From an administrator PowerShell window:
 
 ```powershell
-.\scripts\package.ps1
-```
-
-Output: `dist\AiShield-portable.zip` and `dist\AiShield\` folder. Copy that folder to another machine, then:
-
-```powershell
-pip install -r python\requirements.txt
-cd python
-python -m aishield
-```
-
----
-
-## Optional add-ons
-
-These are **not** required for basic use.
-
-| Script | Admin? | What it does |
-|--------|--------|--------------|
-| `.\scripts\configure-browser-gpo.ps1` | Yes | Blocks AI domains in the Windows hosts file |
-| `.\scripts\start-policy-server.ps1` | No | Runs a local enterprise policy server on port 9480 |
-| `.\scripts\install-minifilter.ps1` | Yes | Installs kernel file filter (needs WDK-built driver — see [NEXT.md](NEXT.md)) |
-| `.\scripts\build-native.ps1` | No | Builds Rust native DLL (optional) |
-| `.\native\minifilter\build.ps1` | No | Builds minifilter driver (needs Visual Studio + WDK) |
-
----
-
-## Where files live after install
-
-| What | Location |
-|------|----------|
-| Default config (dev) | `config\default.json` in the project |
-| Live config (service install) | `%ProgramData%\AiShield\config.json` |
-| User override config | `%APPDATA%\AiShield\config.json` |
-| Permissions database | `%APPDATA%\AiShield\permissions.db` |
-| Audit log | Inside the permissions database + export from dashboard |
-
----
-
-## Uninstall
-
-**If you used Method A or B:** close the PowerShell window running `python -m aishield`. Done.
-
-**If you used Method D (Windows Service):**
-
-```powershell
-# Run as Administrator
-Stop-Service AiShield -Force
+# The Windows service, if you installed it
+Stop-Service AiShield -Force -ErrorAction SilentlyContinue
 sc.exe delete AiShield
+
+# Firewall rules from "Block domain" or "Lockdown"
+Get-NetFirewallRule -DisplayName 'AiShield-*' | Remove-NetFirewallRule
 ```
 
-Delete `%ProgramData%\AiShield` and `%APPDATA%\AiShield` if you want to remove all data.
+If you ran `configure-browser-gpo.ps1` or used **Block websites**, also open `C:\Windows\System32\drivers\etc\hosts` and delete the lines marked as AiShield entries.
+
+Older versions could also create empty `Passwords`, `Financial` and `Projects` folders. It's safe to delete them if you don't use them.

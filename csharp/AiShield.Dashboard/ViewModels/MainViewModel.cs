@@ -78,20 +78,14 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
         TerminateAllAiCommand = new RelayCommand(_ => _ = RunAction(() => _api.TerminateAllAiAsync(), "All AI processes stopped"));
         RemoveFolderCommand = new RelayCommand<string>(name => _ = RunAction(() => _api.RemoveFolderAsync(name!), $"Removed {name}"));
         RemoveAppPolicyCommand = new RelayCommand<string>(name => _ = RunAction(() => _api.RemoveAppPolicyAsync(name!), $"Removed rules for {name}"));
-        ExportAuditCommand = new RelayCommand(_ =>
-        {
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(_api.GetAuditExportUrl()) { UseShellExecute = true });
-            StatusMessage = "Opening audit export…";
-        });
+        ExportAuditCommand = new RelayCommand(_ => _ = ExportAuditAsync());
 
         _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(8) };
         _timer.Tick += async (_, _) =>
         {
             if (Interlocked.CompareExchange(ref _refreshRunning, 0, 0) != 0) return;
-            var online = await _api.IsOnlineAsync();
-            IsConnected = online;
-            ConnectionStatus = online ? "Firewall Active" : "Service Offline";
-            if (online && (DateTime.UtcNow - _lastFullRefresh).TotalSeconds >= 20)
+            SetConnected(await _api.IsOnlineAsync());
+            if (IsConnected && (DateTime.UtcNow - _lastFullRefresh).TotalSeconds >= 20)
                 await RefreshAsync(silent: true);
         };
         _timer.Start();
@@ -99,6 +93,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
     }
 
     public ObservableCollection<string> PolicyOptions { get; }
+    public string AppVersion { get; } = "v" + typeof(MainViewModel).Assembly.GetName().Version?.ToString(3);
 
     public ICommand NavigateCommand { get; }
     public ICommand RefreshCommand { get; }
@@ -215,18 +210,17 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
         _ => "",
     };
 
-    public bool IsConnected { get => _isConnected; set { _isConnected = value; OnPropertyChanged(); OnPropertyChanged(nameof(ShieldHealthPercent)); } }
+    public bool IsConnected { get => _isConnected; set { _isConnected = value; OnPropertyChanged(); } }
     public bool IsLoading { get => _isLoading; set { _isLoading = value; OnPropertyChanged(); } }
     public bool IsRefreshing { get => _isRefreshing; set { _isRefreshing = value; OnPropertyChanged(); } }
     public string ConnectionStatus { get => _connectionStatus; set { _connectionStatus = value; OnPropertyChanged(); } }
     public string LastUpdated { get => _lastUpdated; set { _lastUpdated = value; OnPropertyChanged(); } }
-    public int AiCount { get => _aiCount; set { _aiCount = value; OnPropertyChanged(); OnPropertyChanged(nameof(ShieldHealthPercent)); } }
+    public int AiCount { get => _aiCount; set { _aiCount = value; OnPropertyChanged(); } }
     public int NetCount { get => _netCount; set { _netCount = value; OnPropertyChanged(); } }
     public int BlockedCount { get => _blockedCount; set { _blockedCount = value; OnPropertyChanged(); } }
     public int FolderCount { get => _folderCount; set { _folderCount = value; OnPropertyChanged(); } }
     public int PendingCount { get => _pendingCount; set { _pendingCount = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasPending)); } }
     public bool HasPending => PendingCount > 0;
-    public int ShieldHealthPercent => IsConnected ? Math.Clamp(100 - AiCount * 8 - NetCount * 5 - PendingCount * 15, 25, 100) : 0;
 
     public async Task SetFolderPolicyAsync(string folderName, string policy)
         => await RunAction(() => _api.SetFolderPolicyAsync(folderName, policy), $"{folderName}: {policy}");
@@ -246,8 +240,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
         if (!silent) IsRefreshing = true;
         try
         {
-            IsConnected = await _api.IsOnlineAsync();
-            ConnectionStatus = IsConnected ? "Firewall Active" : "Service Offline";
+            SetConnected(await _api.IsOnlineAsync());
             if (!IsConnected) { IsLoading = false; return; }
 
             var cfg = await _api.GetConfigAsync();
@@ -279,10 +272,48 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
             _lastFullRefresh = DateTime.UtcNow;
             IsLoading = false;
         }
+        catch (Exception ex)
+        {
+            DashboardLog.Error("Refresh", ex);
+            StatusMessage = "Couldn't refresh. See dashboard.log for details";
+            IsLoading = false;
+        }
         finally
         {
             IsRefreshing = false;
             Interlocked.Exchange(ref _refreshRunning, 0);
+        }
+    }
+
+    private void SetConnected(bool online)
+    {
+        IsConnected = online;
+        ConnectionStatus = online ? "Service running" : "Service offline";
+    }
+
+    private async Task ExportAuditAsync()
+    {
+        var dialog = new Microsoft.Win32.SaveFileDialog
+        {
+            FileName = "ai-firewall-audit.csv",
+            Filter = "CSV files (*.csv)|*.csv",
+        };
+        if (dialog.ShowDialog() != true) return;
+
+        var csv = await _api.GetAuditCsvAsync();
+        if (csv is null)
+        {
+            StatusMessage = "Couldn't export the audit log: the service didn't respond";
+            return;
+        }
+        try
+        {
+            await System.IO.File.WriteAllTextAsync(dialog.FileName, csv);
+            StatusMessage = $"Saved {dialog.FileName}";
+        }
+        catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException)
+        {
+            StatusMessage = $"Couldn't save the file: {ex.Message}";
         }
     }
 

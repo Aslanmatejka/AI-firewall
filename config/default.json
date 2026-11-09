@@ -3,11 +3,11 @@
   "global_policy": "ask",
   "fail_closed": false,
   "protected_folders": [
-    { "name": "Documents", "path": "%USERPROFILE%\\Documents", "policy": "ask" },
-    { "name": "Photos", "path": "%USERPROFILE%\\Pictures", "policy": "ask" },
-    { "name": "Passwords", "path": "%USERPROFILE%\\Documents\\Passwords", "policy": "block" },
+    { "name": "Documents", "path": "%DOCUMENTS%", "policy": "ask" },
+    { "name": "Photos", "path": "%PICTURES%", "policy": "ask" },
+    { "name": "Passwords", "path": "%DOCUMENTS%\\Passwords", "policy": "block" },
     { "name": "Projects", "path": "%USERPROFILE%\\Projects", "policy": "ask" },
-    { "name": "Financial", "path": "%USERPROFILE%\\Documents\\Financial", "policy": "block" }
+    { "name": "Financial", "path": "%DOCUMENTS%\\Financial", "policy": "block" }
   ],
   "ai_domains": [
     "openai.com",
@@ -55,9 +55,6 @@
   "microphone_policy": "ask",
   "camera_policy": "ask",
   "encrypt_db_at_rest": true,
-  "named_pipe_enabled": true,
-  "wfp_enabled": true,
-  "minifilter_enabled": true,
   "ml_heuristics_enabled": true,
   "ml_heuristic_threshold": 65,
   "enterprise_policy_url": "",
@@ -67,6 +64,5 @@
   "device_deny_cooldown_seconds": 3600,
   "monitor_interval_seconds": 2,
   "dashboard_host": "127.0.0.1",
-  "dashboard_port": 9470,
-  "allow_simulate_approval": false
+  "dashboard_port": 9470
 }

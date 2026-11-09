@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import logging
 import socket
-import subprocess
 import threading
 import time
+from functools import lru_cache
 from typing import Any, Callable
 
 import psutil
@@ -17,10 +17,19 @@ from ..permissions.resolver import PolicyResolver
 
 logger = logging.getLogger(__name__)
 
-try:
-    from ..native.wfp_bridge import get_engine as get_wfp_engine
-except ImportError:
-    get_wfp_engine = None  # type: ignore[assignment]
+_MAX_SEEN_CONNECTIONS = 10_000
+NETWORK_BLOCK_UNAVAILABLE = (
+    "Network blocking is off until it can target one app. Blocking a domain's IP "
+    "address also cuts off unrelated sites that share it."
+)
+
+
+@lru_cache(maxsize=2048)
+def _reverse_lookup(ip: str) -> str:
+    try:
+        return socket.gethostbyaddr(ip)[0]
+    except (socket.herror, socket.gaierror, OSError):
+        return ip
 
 
 class NetworkFirewall:
@@ -43,10 +52,6 @@ class NetworkFirewall:
         self._connections: list[NetworkConnection] = []
         self._seen: set[str] = set()
         self._domain_cache: dict[str, bool] = {}
-        self._blocked_rules: set[str] = {}
-        self._domain_to_ips: dict[str, set[str]] = {}
-        self._wfp_blocked_ips: set[str] = set()
-        self._use_wfp = bool(config.get("wfp_enabled", True))
 
     @property
     def connections(self) -> list[NetworkConnection]:
@@ -70,11 +75,6 @@ class NetworkFirewall:
         self._running = False
         if self._thread:
             self._thread.join(timeout=5)
-        if get_wfp_engine is not None:
-            try:
-                get_wfp_engine().close()
-            except Exception as e:
-                logger.debug("WFP engine close: %s", e)
 
     def _is_ai_domain(self, host: str) -> bool:
         host = host.lower().rstrip(".")
@@ -88,25 +88,10 @@ class NetworkFirewall:
         return False
 
     def _resolve_host(self, addr: str) -> str:
-        if not addr or addr in ("*", "0.0.0.0", "::"):
+        if not addr or addr in ("*", "0.0.0.0", "::"):  # noqa: S104
             return ""
         ip = addr.split(":")[0] if ":" in addr and "." in addr else addr
-        try:
-            return socket.gethostbyaddr(ip)[0]
-        except (socket.herror, socket.gaierror, OSError):
-            return ip
-
-    def _resolve_domain_ips(self, domain: str) -> set[str]:
-        if domain in self._domain_to_ips:
-            return self._domain_to_ips[domain]
-        ips: set[str] = set()
-        try:
-            for info in socket.getaddrinfo(domain, None, proto=socket.IPPROTO_TCP):
-                ips.add(info[4][0])
-        except (socket.gaierror, OSError) as e:
-            logger.debug("DNS lookup failed for %s: %s", domain, e)
-        self._domain_to_ips[domain] = ips
-        return ips
+        return _reverse_lookup(ip)
 
     def _loop(self) -> None:
         while self._running:
@@ -146,6 +131,8 @@ class NetworkFirewall:
                 ai_conns.append(nc)
                 key = f"{conn.pid}:{remote_addr}"
                 if key not in self._seen:
+                    if len(self._seen) >= _MAX_SEEN_CONNECTIONS:
+                        self._seen.clear()
                     self._seen.add(key)
                     self._handle_ai_connection(nc)
 
@@ -162,112 +149,16 @@ class NetworkFirewall:
             self._block_connection(conn)
 
     def _block_connection(self, conn: NetworkConnection) -> None:
-        if conn.pid:
-            try:
-                proc = psutil.Process(conn.pid)
-                proc.terminate()
-                logger.info("Terminated process %d for blocked AI connection", conn.pid)
-            except (psutil.NoSuchProcess, psutil.AccessDenied):
-                pass
         self._bus.emit(
             ResourceType.NETWORK, PolicyAction.BLOCK, conn.process_name,
             conn.remote_host,
-            f"Blocked connection to {conn.remote_host}",
+            f"Denied connection to {conn.remote_host}. The connection wasn't cut: "
+            "per-app network blocking isn't available yet",
             EventSeverity.WARNING,
         )
-
-    def _block_ip(self, ip: str, domain: str = "") -> bool:
-        """Try WFP user-mode filter first, then netsh advfirewall."""
-        if self._use_wfp and get_wfp_engine is not None:
-            engine = get_wfp_engine()
-            if engine.available:
-                label = f"AiShield-WFP-{domain}-{ip}" if domain else None
-                if engine.block_outbound_ip(ip, label=label):
-                    self._wfp_blocked_ips.add(ip)
-                    return True
-
-        rule_name = f"AiShield-Block-{domain.replace('.', '-')}-{ip.replace('.', '-')}" if domain else f"AiShield-Block-{ip.replace('.', '-')}"
-        if rule_name in self._blocked_rules:
-            return True
-        try:
-            cmd = [
-                "netsh", "advfirewall", "firewall", "add", "rule",
-                f"name={rule_name}", "dir=out", "action=block",
-                f"remoteip={ip}", "enable=yes",
-            ]
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
-            if result.returncode == 0:
-                self._blocked_rules.add(rule_name)
-                logger.info("netsh firewall rule added for %s", ip)
-                return True
-            logger.warning("Failed to add firewall rule: %s", result.stderr.strip())
-        except (subprocess.TimeoutExpired, FileNotFoundError) as e:
-            logger.warning("Cannot add firewall rule: %s", e)
-        return False
-
-    def _unblock_ip(self, ip: str, domain: str = "") -> bool:
-        removed = False
-        if ip in self._wfp_blocked_ips and get_wfp_engine is not None:
-            if get_wfp_engine().unblock_outbound_ip(ip):
-                self._wfp_blocked_ips.discard(ip)
-                removed = True
-
-        prefix = f"AiShield-Block-{domain.replace('.', '-')}-" if domain else f"AiShield-Block-{ip.replace('.', '-')}"
-        for rule_name in list(self._blocked_rules):
-            if domain and not rule_name.startswith(f"AiShield-Block-{domain.replace('.', '-')}-"):
-                continue
-            if not domain and ip not in rule_name:
-                continue
-            try:
-                subprocess.run(
-                    ["netsh", "advfirewall", "firewall", "delete", "rule", f"name={rule_name}"],
-                    capture_output=True, text=True, timeout=10,
-                )
-                self._blocked_rules.discard(rule_name)
-                removed = True
-            except (subprocess.TimeoutExpired, FileNotFoundError):
-                pass
-        return removed
-
-    def block_domain(self, domain: str) -> bool:
-        """Block outbound traffic to a domain (WFP preferred, netsh fallback)."""
-        ips = self._resolve_domain_ips(domain)
-        if not ips:
-            logger.warning("No IPs resolved for domain %s", domain)
-            return False
-        ok = False
-        for ip in ips:
-            if self._block_ip(ip, domain):
-                ok = True
-        return ok
-
-    def unblock_domain(self, domain: str) -> bool:
-        ips = self._domain_to_ips.get(domain, set())
-        removed = 0
-        if get_wfp_engine is not None and ips:
-            removed += get_wfp_engine().unblock_domain_ips(domain, ips)
-            self._wfp_blocked_ips -= ips
-
-        prefix = f"AiShield-Block-{domain.replace('.', '-')}-"
-        for rule_name in list(self._blocked_rules):
-            if not rule_name.startswith(prefix):
-                continue
-            try:
-                subprocess.run(
-                    ["netsh", "advfirewall", "firewall", "delete", "rule", f"name={rule_name}"],
-                    capture_output=True, text=True, timeout=10,
-                )
-                self._blocked_rules.discard(rule_name)
-                removed += 1
-            except (subprocess.TimeoutExpired, FileNotFoundError):
-                pass
-        self._domain_to_ips.pop(domain, None)
-        return removed > 0
 
     def get_stats(self) -> dict[str, int]:
         return {
             "ai_connections": len(self._connections),
-            "blocked_rules": len(self._blocked_rules),
-            "wfp_blocked_ips": len(self._wfp_blocked_ips),
             "total_seen": len(self._seen),
         }

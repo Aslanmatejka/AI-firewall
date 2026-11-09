@@ -7,13 +7,15 @@ import time
 from dataclasses import asdict
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any, Literal
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse, Response
+from pydantic import BaseModel, Field, StringConstraints
 
+from .. import __version__
 from ..service import AiShieldService
+from .security import SESSION_COOKIE, ApiSecurity
 
 
 def _serialize(obj: Any) -> Any:
@@ -30,57 +32,138 @@ def _serialize(obj: Any) -> Any:
     return obj
 
 
+PolicyValue = Literal["allow", "ask", "block"]
+ShortText = Annotated[str, StringConstraints(min_length=1, max_length=260)]
+DomainName = Annotated[str, StringConstraints(pattern=r"^[A-Za-z0-9.-]{1,253}$")]
+
+SAFE_METHODS = frozenset({"GET", "HEAD", "OPTIONS"})
+PUBLIC_PATHS = frozenset({"/api/health", "/login"})
+CONTENT_SECURITY_POLICY = (
+    "default-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; "
+    "frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+)
+SIGN_IN_PAGE = """<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>AI Firewall</title></head>
+<body style="font-family:system-ui;max-width:32rem;margin:4rem auto;line-height:1.5">
+<h1>Sign in to AI Firewall</h1>
+<p>This link has expired or was already used. To get a new one, run this in PowerShell:</p>
+<pre>.\\scripts\\open-dashboard.ps1</pre>
+</body></html>"""
+
+
 class AppPolicyBody(BaseModel):
-    app_name: str
-    policies: dict[str, str] = {}
+    app_name: ShortText
+    policies: dict[str, PolicyValue] = {}
 
 
 class AppActionBody(BaseModel):
-    app_name: str
-    action: str  # allow | block | ask
+    app_name: ShortText
+    action: PolicyValue
 
 
 class FolderPolicyBody(BaseModel):
-    folder_name: str
-    policy: str
+    folder_name: ShortText
+    policy: PolicyValue
 
 
 class AddFolderBody(BaseModel):
-    name: str
-    path: str
-    policy: str = "ask"
+    name: ShortText
+    path: Annotated[str, StringConstraints(min_length=1, max_length=4096)]
+    policy: PolicyValue = "ask"
 
 
 class GlobalPolicyBody(BaseModel):
-    key: str
-    value: str
+    key: ShortText
+    value: PolicyValue
 
 
 class PidBody(BaseModel):
-    pid: int
+    pid: Annotated[int, Field(gt=0)]
 
 
 class DomainBody(BaseModel):
-    domain: str
+    domain: DomainName
 
 
 class RemoveFolderBody(BaseModel):
-    folder_name: str
+    folder_name: ShortText
 
 
 class RemoveAppBody(BaseModel):
-    app_name: str
+    app_name: ShortText
 
 
 class AppResourcePolicyBody(BaseModel):
-    app_name: str
-    resource: str
-    policy: str
+    app_name: ShortText
+    resource: ShortText
+    policy: PolicyValue
 
 
-def create_app(service: AiShieldService) -> FastAPI:
-    app = FastAPI(title="AI Firewall Dashboard", version="0.2.0")
+def _bearer_token(request: Request) -> str | None:
+    scheme, _, value = request.headers.get("authorization", "").partition(" ")
+    return value.strip() if scheme.lower() == "bearer" else None
+
+
+def _rejection(request: Request, security: ApiSecurity) -> Response | None:
+    """Return the response that refuses this request, or None if it may proceed."""
+    # An unexpected Host means DNS rebinding: another site's name pointed at this PC.
+    if request.headers.get("host", "").lower() not in security.allowed_hosts:
+        return JSONResponse({"ok": False, "error": "Unrecognized Host header"}, status_code=403)
+
+    path = request.url.path
+    if path in PUBLIC_PATHS:
+        return None
+
+    origin = request.headers.get("origin")
+    if origin is not None and origin.lower() not in security.allowed_origins:
+        return JSONResponse({"ok": False, "error": "Cross-origin request refused"}, status_code=403)
+
+    has_token = security.is_valid_token(_bearer_token(request))
+    if has_token:
+        return None
+
+    # A browser session can't mint sign-in links, and its writes must prove their origin.
+    has_session = path != "/api/login-code" and security.is_valid_session(
+        request.cookies.get(SESSION_COOKIE),
+    )
+    if not has_session:
+        if path == "/":
+            return HTMLResponse(SIGN_IN_PAGE, status_code=401)
+        return JSONResponse({"ok": False, "error": "Sign-in required"}, status_code=401)
+    if request.method not in SAFE_METHODS and origin is None:
+        return JSONResponse({"ok": False, "error": "Cross-origin request refused"}, status_code=403)
+    return None
+
+
+def create_app(service: AiShieldService, security: ApiSecurity) -> FastAPI:
+    app = FastAPI(
+        title="AI Firewall Dashboard", version=__version__,
+        docs_url=None, redoc_url=None, openapi_url=None,
+    )
     actions = service.actions
+
+    @app.middleware("http")
+    async def enforce_access(request: Request, call_next):
+        response = _rejection(request, security) or await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "no-referrer"
+        response.headers["Content-Security-Policy"] = CONTENT_SECURITY_POLICY
+        if request.url.path.startswith("/api/"):
+            response.headers["Cache-Control"] = "no-store"
+        return response
+
+    @app.get("/login")
+    def login(code: str = ""):
+        if not security.redeem_login_code(code):
+            return HTMLResponse(SIGN_IN_PAGE, status_code=401)
+        response = RedirectResponse("/", status_code=303)
+        response.set_cookie(SESSION_COOKIE, security.session, httponly=True, samesite="strict", path="/")
+        return response
+
+    @app.post("/api/login-code")
+    def login_code():
+        return {"ok": True, "url": security.new_login_url()}
 
     @app.get("/", response_class=HTMLResponse)
     def dashboard():
@@ -105,11 +188,11 @@ def create_app(service: AiShieldService) -> FastAPI:
         return JSONResponse(_serialize(service.get_status()))
 
     @app.get("/api/events")
-    def events(limit: int = 50):
+    def events(limit: int = Query(50, ge=1, le=500)):
         return JSONResponse(_serialize(service.event_bus.get_events(limit)))
 
     @app.get("/api/audit")
-    def audit(limit: int = 100):
+    def audit(limit: int = Query(100, ge=1, le=5000)):
         return JSONResponse(service.permissions.get_audit_log(limit))
 
     @app.get("/api/config")
@@ -131,7 +214,7 @@ def create_app(service: AiShieldService) -> FastAPI:
     # --- User actions ---
 
     @app.post("/api/approve/{request_id}")
-    def approve(request_id: str, allow: bool = True):
+    def approve(request_id: str, allow: bool):
         req = service.event_bus.resolve_request(request_id, allow)
         if not req:
             raise HTTPException(404, "Request not found")
@@ -160,7 +243,7 @@ def create_app(service: AiShieldService) -> FastAPI:
         return JSONResponse(actions.terminate_all_ai())
 
     @app.post("/api/policy/app")
-    def set_app_policy(body: AppPolicyBody):
+    def set_app_policy(body: AppPolicyBody):  # Values are validated by PolicyValue.
         service.permissions.set_app_policy(body.app_name, body.policies)
         return {"ok": True}
 
@@ -208,8 +291,7 @@ def create_app(service: AiShieldService) -> FastAPI:
 
     @app.post("/api/firewall/block-domain")
     def block_domain(body: DomainBody):
-        ok = service._network.block_domain(body.domain)
-        return {"ok": ok, "domain": body.domain}
+        return JSONResponse(actions.block_domain(body.domain))
 
     @app.post("/api/firewall/unblock-domain")
     def unblock_domain(body: DomainBody):
@@ -266,7 +348,7 @@ def create_app(service: AiShieldService) -> FastAPI:
         return JSONResponse(actions.restore_defaults())
 
     @app.get("/api/audit/export")
-    def export_audit(limit: int = 1000):
+    def export_audit(limit: int = Query(1000, ge=1, le=100000)):
         csv_data = service.permissions.export_audit_csv(limit)
         return PlainTextResponse(
             csv_data,

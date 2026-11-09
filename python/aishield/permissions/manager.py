@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-import json
+import csv
+import io
 import logging
 import sqlite3
 import threading
 import time
 from datetime import datetime, timedelta
-from pathlib import Path
 from typing import Any
 
 from ..core.config import get_data_dir
@@ -16,6 +16,15 @@ from ..core.models import PolicyAction, ResourceType, ShieldEvent
 from ..security.dpapi import load_or_decrypt_db, seal_db
 
 logger = logging.getLogger(__name__)
+
+_SPREADSHEET_FORMULA_PREFIXES = ("=", "+", "-", "@", "\t", "\r")
+_CLIPBOARD_LABEL_LIKE = "clipboard: %"
+
+
+def _csv_cell(value: Any) -> str:
+    """A spreadsheet runs cells that start like formulas, and these values can come from any app."""
+    text = str(value or "")
+    return "'" + text if text.startswith(_SPREADSHEET_FORMULA_PREFIXES) else text
 
 
 class PermissionManager:
@@ -63,6 +72,27 @@ class PermissionManager:
                 );
                 CREATE INDEX IF NOT EXISTS idx_audit_log_id ON audit_log(id DESC);
             """)
+            self._scrub_clipboard_text(conn)
+
+    @staticmethod
+    def _scrub_clipboard_text(conn: sqlite3.Connection) -> None:
+        """Earlier versions stored the first 40 characters of sensitive clipboard text."""
+        conn.execute("PRAGMA secure_delete = ON")
+        cur = conn.execute(
+            "UPDATE audit_log SET resource = 'clipboard: redacted' "
+            "WHERE resource_type = 'clipboard' AND resource NOT LIKE ?",
+            (_CLIPBOARD_LABEL_LIKE,),
+        )
+        scrubbed = cur.rowcount
+        cur = conn.execute(
+            "DELETE FROM grants WHERE resource_type = 'clipboard' AND resource_pattern NOT LIKE ?",
+            (_CLIPBOARD_LABEL_LIKE,),
+        )
+        scrubbed += cur.rowcount
+        conn.commit()
+        if scrubbed:
+            conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+            logger.info("Removed clipboard text from %d stored record(s)", scrubbed)
 
     def log_event(self, event: ShieldEvent) -> None:
         with self._lock, sqlite3.connect(self._db_path) as conn:
@@ -87,7 +117,7 @@ class PermissionManager:
         with self._lock, sqlite3.connect(self._db_path) as conn:
             row = conn.execute(
                 "SELECT action, expires_at FROM grants "
-                "WHERE app_name = ? AND resource_type = ? AND ? LIKE resource_pattern "
+                "WHERE app_name = ? AND resource_type = ? AND resource_pattern = ? COLLATE NOCASE "
                 "AND (expires_at IS NULL OR expires_at > ?)",
                 (app_name, resource_type.value, resource, datetime.now().isoformat()),
             ).fetchone()
@@ -184,23 +214,13 @@ class PermissionManager:
         return deleted
 
     def export_audit_csv(self, limit: int = 1000) -> str:
-        rows = self.get_audit_log(limit)
-        lines = ["timestamp,app_name,resource_type,resource,action,decision,message"]
-        for row in reversed(rows):
-            def esc(val: Any) -> str:
-                s = str(val or "").replace('"', '""')
-                return f'"{s}"' if "," in s or '"' in s else s
-
-            lines.append(",".join([
-                esc(row.get("timestamp")),
-                esc(row.get("app_name")),
-                esc(row.get("resource_type")),
-                esc(row.get("resource")),
-                esc(row.get("action")),
-                esc(row.get("decision")),
-                esc(row.get("message")),
-            ]))
-        return "\n".join(lines)
+        columns = ("timestamp", "app_name", "resource_type", "resource", "action", "decision", "message")
+        out = io.StringIO()
+        writer = csv.writer(out, lineterminator="\n")
+        writer.writerow(columns)
+        for row in reversed(self.get_audit_log(limit)):
+            writer.writerow([_csv_cell(row.get(column)) for column in columns])
+        return out.getvalue().rstrip("\n")
 
     def get_stats(self) -> dict[str, int]:
         now = time.time()

@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+TestResults/
+
+# Rust (experimental)
+target/
+
+# Node (stray tooling)
+node_modules/
+
+# Local logs and debug sessions
+*.log
+debug-*.log
+
+# Editors and agents
+.cursor/
+.claude/settings.local.json
+.idea/
+.vscode/
+
+# Build output
+dist/
+artifacts/
+
+# Secrets and signing material must never be committed
+*.pfx
+*.p12
+*.snk
+*.pem
+*.key
+.env
+.env.*
+
+# OS
+Thumbs.db
+Desktop.ini

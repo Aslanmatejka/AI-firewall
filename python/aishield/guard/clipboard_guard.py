@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import ctypes
+import ctypes.wintypes
+import hashlib
 import logging
 import re
 import threading
@@ -19,13 +21,24 @@ user32 = ctypes.windll.user32
 WM_CLIPBOARDUPDATE = 0x031D
 
 SENSITIVE_PATTERNS = [
-    re.compile(r"password", re.I),
-    re.compile(r"api[_-]?key", re.I),
-    re.compile(r"secret", re.I),
-    re.compile(r"token", re.I),
-    re.compile(r"sk-[a-zA-Z0-9]{20,}"),
-    re.compile(r"-----BEGIN.*PRIVATE KEY-----"),
+    ("password", re.compile(r"password", re.I)),
+    ("API key", re.compile(r"api[_-]?key", re.I)),
+    ("secret", re.compile(r"secret", re.I)),
+    ("token", re.compile(r"token", re.I)),
+    ("API key", re.compile(r"sk-[a-zA-Z0-9]{20,}")),
+    ("private key", re.compile(r"-----BEGIN.*PRIVATE KEY-----")),
 ]
+LARGE_TEXT_CHARS = 500
+
+
+def classify_sensitive(text: str) -> str | None:
+    """Name what was copied without repeating any of it. Only this label is ever stored."""
+    for label, pattern in SENSITIVE_PATTERNS:
+        if pattern.search(text):
+            return f"clipboard: {label}"
+    if len(text) > LARGE_TEXT_CHARS:
+        return "clipboard: large text"
+    return None
 
 
 class ClipboardGuard:
@@ -49,7 +62,7 @@ class ClipboardGuard:
         self._policy = PolicyAction(config.get("clipboard_policy", "ask"))
         self._running = False
         self._thread: threading.Thread | None = None
-        self._last_content = ""
+        self._last_digest = b""
         self._hwnd: int | None = None
 
     def update_policy(self, value: str) -> None:
@@ -91,11 +104,6 @@ class ClipboardGuard:
             pass
         return ""
 
-    def _is_sensitive(self, text: str) -> bool:
-        if len(text) > 500:
-            return True
-        return any(p.search(text) for p in SENSITIVE_PATTERNS)
-
     def _clear_clipboard(self) -> None:
         try:
             import win32clipboard
@@ -114,23 +122,24 @@ class ClipboardGuard:
         if not self._running or not self._should_guard():
             return
         text = self._get_clipboard_text()
-        if not text or text == self._last_content:
+        digest = hashlib.sha256(text.encode("utf-8", "replace")).digest()
+        if not text or digest == self._last_digest:
             return
-        self._last_content = text
-        if not self._is_sensitive(text):
+        self._last_digest = digest
+        label = classify_sensitive(text)
+        if label is None:
             return
 
         app_name, app_pid = self._get_ai_app()
-        preview = text[:40] + "..." if len(text) > 40 else text
-        policy = self._resolver.for_access(app_name or "AI Process", ResourceType.CLIPBOARD, preview)
+        policy = self._resolver.for_access(app_name or "AI Process", ResourceType.CLIPBOARD, label)
         decision = self._bus.request_approval(
-            app_name or "AI Process", app_pid, ResourceType.CLIPBOARD, preview, policy,
+            app_name or "AI Process", app_pid, ResourceType.CLIPBOARD, label, policy,
         )
         if decision == PolicyAction.BLOCK:
             self._clear_clipboard()
             self._bus.emit(
                 ResourceType.CLIPBOARD, PolicyAction.BLOCK,
-                app_name or "AI", preview,
+                app_name or "AI", label,
                 "Blocked sensitive clipboard access",
                 EventSeverity.CRITICAL,
             )

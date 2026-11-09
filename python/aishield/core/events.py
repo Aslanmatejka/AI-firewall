@@ -61,7 +61,7 @@ class EventBus:
             try:
                 sub(event)
             except Exception:
-                pass
+                logger.exception("Event subscriber failed for event %s", event.id)
         return event
 
     def request_approval(
@@ -104,20 +104,20 @@ class EventBus:
                     decision = result
                     break
             except Exception as e:
-                logger.debug("Approval handler error: %s", e)
+                logger.warning("Approval handler error: %s", e)
 
-        if decision is None:
-            if not waiter.wait(timeout=self._approval_timeout):
-                decision = PolicyAction.BLOCK
-                logger.info("Approval timed out for %s — defaulting to block", req.id)
-            else:
-                decision = req.decision or PolicyAction.BLOCK
+        if decision is None and not waiter.wait(timeout=self._approval_timeout):
+            logger.info("Approval timed out for %s: defaulting to block", req.id)
 
-        req.resolved = True
-        req.decision = decision
+        # A decision that arrives as the wait ends still counts, because
+        # resolve_request may already have created a grant for it.
         with self._lock:
             self._pending.pop(req.id, None)
             self._waiters.pop(req.id, None)
+            if req.decision is None:
+                req.decision = decision or PolicyAction.BLOCK
+            req.resolved = True
+            decision = req.decision
 
         sev = EventSeverity.INFO if decision == PolicyAction.ALLOW else EventSeverity.WARNING
         self.emit(
@@ -138,18 +138,18 @@ class EventBus:
     def resolve_request(self, request_id: str, allow: bool) -> AccessRequest | None:
         decision = PolicyAction.ALLOW if allow else PolicyAction.BLOCK
         with self._lock:
-            req = self._pending.get(request_id)
+            req = self._pending.pop(request_id, None)
+            waiter = self._waiters.pop(request_id, None)
             if not req:
                 return None
             req.resolved = True
             req.decision = decision
-            waiter = self._waiters.get(request_id)
 
         for cb in self._resolve_callbacks:
             try:
                 cb(req, decision)
-            except Exception as e:
-                logger.debug("Resolve callback error: %s", e)
+            except Exception:
+                logger.exception("Resolve callback failed for request %s", request_id)
 
         if waiter:
             waiter.set()

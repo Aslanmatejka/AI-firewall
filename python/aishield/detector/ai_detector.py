@@ -21,7 +21,9 @@ class AiDetector:
         self._ml = MlHeuristics(config) if config.get("ml_heuristics_enabled", True) else None
 
     def match_process(self, name: str, exe: str) -> tuple[str, int]:
-        combined = f"{name} {exe}".lower()
+        # Only the program itself counts. Matching the whole path flags anything
+        # that merely runs from a folder such as ".claude" or "continue".
+        combined = f"{name} {Path(exe).name}".lower()
         if self._is_helper_process(name, exe):
             return "", 0
         best_type = ""
@@ -82,11 +84,7 @@ class AiDetector:
 
     def get_gpu_usage(self) -> dict[int, float]:
         """Return PID -> GPU memory MB for processes using GPU."""
-        usage: dict[int, float] = {}
-        usage.update(self._gpu_from_nvidia_smi())
-        if not usage:
-            usage.update(self._gpu_from_wmi())
-        return usage
+        return self._gpu_from_nvidia_smi()
 
     def _gpu_from_nvidia_smi(self) -> dict[int, float]:
         usage: dict[int, float] = {}
@@ -107,36 +105,6 @@ class AiDetector:
                         except ValueError:
                             pass
         except (FileNotFoundError, subprocess.TimeoutExpired):
-            pass
-        return usage
-
-    def _gpu_from_wmi(self) -> dict[int, float]:
-        """Fallback GPU usage via WMI (Windows)."""
-        usage: dict[int, float] = {}
-        if os.name != "nt":
-            return usage
-        try:
-            result = subprocess.run(
-                [
-                    "powershell", "-NoProfile", "-Command",
-                    "Get-CimInstance Win32_Process | "
-                    "Where-Object { $_.Name -match 'python|ollama|lmstudio|cursor' } | "
-                    "Select-Object ProcessId, WorkingSetSize | ConvertTo-Json",
-                ],
-                capture_output=True, text=True, timeout=8,
-            )
-            if result.returncode != 0 or not result.stdout.strip():
-                return usage
-            import json
-            data = json.loads(result.stdout)
-            rows = data if isinstance(data, list) else [data]
-            for row in rows:
-                pid = int(row.get("ProcessId", 0))
-                ws = int(row.get("WorkingSetSize", 0))
-                mb = ws / (1024 * 1024)
-                if pid and mb >= self._gpu_threshold:
-                    usage[pid] = mb
-        except Exception:
             pass
         return usage
 

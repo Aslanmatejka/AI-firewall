@@ -2,19 +2,18 @@
 
 from __future__ import annotations
 
-import json
 import logging
 from pathlib import Path
 from typing import Any
 
-import psutil
-
-from ..core.config import get_protected_folders
 from ..core.models import EventSeverity, PolicyAction, ResourceType
-from ..core.user_config import load_merged_config, save_user_config
-from ..guard.file_guard import FileAccessGuard
+from ..core.process_safety import stop_process
+from ..core.user_config import save_user_config
+from ..network.firewall import NETWORK_BLOCK_UNAVAILABLE
 
 logger = logging.getLogger(__name__)
+
+_VALID_POLICIES = {action.value for action in PolicyAction}
 
 
 class ShieldActions:
@@ -25,26 +24,22 @@ class ShieldActions:
         self._service.invalidate_status_cache()
 
     def terminate_process(self, pid: int) -> dict[str, Any]:
-        try:
-            proc = psutil.Process(pid)
-            name = proc.name()
-            proc.terminate()
-            proc.wait(timeout=5)
-            self._service.event_bus.emit(
-                ResourceType.PROCESS, PolicyAction.BLOCK, name, str(pid),
-                f"User terminated AI process {name} (PID {pid})",
-                EventSeverity.WARNING, user_decision="block",
-            )
-            self._touch()
-            return {"ok": True, "pid": pid, "name": name}
-        except psutil.NoSuchProcess:
-            return {"ok": False, "error": "Process not found"}
-        except psutil.AccessDenied:
-            return {"ok": False, "error": "Access denied — run as administrator"}
-        except Exception as e:
-            return {"ok": False, "error": str(e)}
+        if pid not in self._service._process_monitor.get_ai_pids():
+            return {"ok": False, "error": "Only a detected AI process can be stopped from here"}
+        result = stop_process(pid)
+        if not result.stopped:
+            return {"ok": False, "error": result.reason}
+        self._service.event_bus.emit(
+            ResourceType.PROCESS, PolicyAction.BLOCK, result.name, str(pid),
+            f"User terminated AI process {result.name} (PID {pid})",
+            EventSeverity.WARNING, user_decision="block",
+        )
+        self._touch()
+        return {"ok": True, "pid": pid, "name": result.name}
 
     def set_app_policy(self, app_name: str, action: str) -> dict[str, Any]:
+        if action not in _VALID_POLICIES:
+            return {"ok": False, "error": f"Invalid policy: {action}"}
         policies = {
             "default": action, "files": action, "network": action,
             "clipboard": action, "microphone": action, "camera": action,
@@ -58,6 +53,8 @@ class ShieldActions:
         return {"ok": True, "app_name": app_name, "policy": action}
 
     def set_folder_policy(self, folder_name: str, policy: str) -> dict[str, Any]:
+        if policy not in _VALID_POLICIES:
+            return {"ok": False, "error": f"Invalid policy: {policy}"}
         folders = self._service.config.get("protected_folders", [])
         found = False
         for folder in folders:
@@ -78,7 +75,12 @@ class ShieldActions:
         return {"ok": True, "folder": folder_name, "policy": policy}
 
     def add_protected_folder(self, name: str, path: str, policy: str = "ask") -> dict[str, Any]:
-        path = str(Path(path).resolve())
+        if policy not in _VALID_POLICIES:
+            return {"ok": False, "error": f"Invalid policy: {policy}"}
+        resolved = Path(path).resolve()
+        if not resolved.is_dir():
+            return {"ok": False, "error": "That folder doesn't exist"}
+        path = str(resolved)
         folders = list(self._service.config.get("protected_folders", []))
         for f in folders:
             if f["path"] == path or f["name"] == name:
@@ -88,8 +90,6 @@ class ShieldActions:
         save_user_config({"protected_folders": folders})
         self._service.config["protected_folders"] = folders
         self._reload_folders()
-
-        Path(path).mkdir(parents=True, exist_ok=True)
         return {"ok": True, "name": name, "path": path, "policy": policy}
 
     def set_global_policy(self, key: str, value: str) -> dict[str, Any]:
@@ -107,7 +107,7 @@ class ShieldActions:
         for key, value in policies.items():
             if key not in allowed:
                 return {"ok": False, "error": f"Unknown policy key: {key}"}
-            if value not in {"allow", "ask", "block"}:
+            if value not in _VALID_POLICIES:
                 return {"ok": False, "error": f"Invalid policy value: {value}"}
             clean[key] = value
 
@@ -121,15 +121,11 @@ class ShieldActions:
         self._service.invalidate_status_cache()
         return {"ok": True, "updated": list(clean.keys())}
 
+    def block_domain(self, domain: str) -> dict[str, Any]:
+        return {"ok": False, "domain": domain, "error": NETWORK_BLOCK_UNAVAILABLE}
+
     def block_all_ai_domains(self) -> dict[str, Any]:
-        blocked = []
-        failed = []
-        for domain in self._service.config.get("ai_domains", []):
-            if self._service._network.block_domain(domain):
-                blocked.append(domain)
-            else:
-                failed.append(domain)
-        return {"ok": len(failed) == 0, "blocked": blocked, "failed": failed}
+        return {"ok": False, "error": NETWORK_BLOCK_UNAVAILABLE}
 
     def block_ai_websites(self) -> dict[str, Any]:
         ok = self._service.browser.block_ai_domains_hosts()
@@ -139,24 +135,11 @@ class ShieldActions:
         return self.terminate_process(pid)
 
     def unblock_domain(self, domain: str) -> dict[str, Any]:
-        ok = self._service._network.unblock_domain(domain)
-        return {"ok": ok, "domain": domain}
+        return {"ok": False, "domain": domain, "error": NETWORK_BLOCK_UNAVAILABLE}
 
     def _reload_folders(self) -> None:
-        self._service.config = load_merged_config()
-        self._service._folders = get_protected_folders(self._service.config)
-        try:
-            self._service._file_guard.stop()
-            self._service._file_guard = FileAccessGuard(
-                self._service._folders,
-                self._service.event_bus,
-                self._service._get_primary_ai_app,
-                self._service.policy_resolver,
-            )
-            self._service._file_guard.start()
-            self._service.reload_config(sync_minifilter=True)
-        except Exception as e:
-            logger.warning("Could not reload file guard: %s", e)
+        self._service.reload_config()
+        self._touch()
 
     def get_app_policies(self) -> list[dict[str, Any]]:
         return self._service.permissions.get_app_policies()
@@ -193,7 +176,7 @@ class ShieldActions:
         allowed_resources = {"default", "files", "network", "clipboard", "microphone", "camera"}
         if resource not in allowed_resources:
             return {"ok": False, "error": f"Unknown resource: {resource}"}
-        if value not in {"allow", "ask", "block"}:
+        if value not in _VALID_POLICIES:
             return {"ok": False, "error": f"Invalid policy: {value}"}
 
         existing = {p["app_name"]: p for p in self.get_app_policies()}.get(app_name, {})
@@ -217,11 +200,12 @@ class ShieldActions:
             "microphone_policy": "block",
             "camera_policy": "block",
         })
-        domains = self.block_all_ai_domains()
         return {
             "ok": True,
-            "message": "Lockdown enabled — AI network, clipboard, and device access blocked",
-            "domains": domains,
+            "message": (
+                "Lockdown policies set to block. Saved allow decisions still apply, "
+                "and network connections aren't cut yet"
+            ),
         }
 
     def restore_defaults(self) -> dict[str, Any]:

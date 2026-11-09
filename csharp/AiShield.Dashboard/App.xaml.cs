@@ -1,5 +1,5 @@
 using System.Windows;
-using AiShield.Dashboard.ViewModels;
+using AiShield.Dashboard.Services;
 
 namespace AiShield.Dashboard;
 
@@ -10,13 +10,30 @@ public partial class App : System.Windows.Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-        ShutdownMode = ShutdownMode.OnMainWindowClose;
-        MainWindow!.StateChanged += (_, _) =>
+
+        DispatcherUnhandledException += (_, args) =>
         {
-            if (MainWindow.WindowState == WindowState.Minimized)
-                MainWindow.Hide();
+            DashboardLog.Error("UI thread", args.Exception);
+            args.Handled = true;
         };
-        _tray = new TrayIcon((MainWindow)MainWindow);
+        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+            DashboardLog.Error("Background thread", args.ExceptionObject as Exception);
+        TaskScheduler.UnobservedTaskException += (_, args) =>
+        {
+            DashboardLog.Error("Background task", args.Exception);
+            args.SetObserved();
+        };
+
+        ShutdownMode = ShutdownMode.OnMainWindowClose;
+        var window = new MainWindow();
+        MainWindow = window;
+        window.StateChanged += (_, _) =>
+        {
+            if (window.WindowState == WindowState.Minimized)
+                window.Hide();
+        };
+        _tray = new TrayIcon(window);
+        window.Show();
     }
 
     protected override void OnExit(ExitEventArgs e)

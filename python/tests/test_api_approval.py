@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import sys
-import tempfile
 import threading
 import time
 import unittest
@@ -16,6 +15,7 @@ from fastapi.testclient import TestClient
 
 from aishield.core.events import EventBus
 from aishield.core.models import PolicyAction, ResourceType, ShieldStatus
+from aishield.dashboard.security import ApiSecurity
 from aishield.dashboard.server import create_app
 
 
@@ -89,6 +89,9 @@ class StubService:
         self.detector = SimpleNamespace(scan_model_files=lambda: [])
         self._network = SimpleNamespace(block_domain=lambda _d: True)
 
+    def is_healthy(self) -> bool:
+        return True
+
     def get_status(self) -> ShieldStatus:
         return ShieldStatus(
             running=True,
@@ -104,7 +107,12 @@ class StubService:
 class ApiApprovalTests(unittest.TestCase):
     def setUp(self) -> None:
         self.service = StubService()
-        self.client = TestClient(create_app(self.service))
+        security = ApiSecurity(9470)
+        self.client = TestClient(
+            create_app(self.service, security),
+            base_url="http://127.0.0.1:9470",
+            headers={"Authorization": f"Bearer {security.token}"},
+        )
 
     def test_approve_endpoint_resolves_pending(self) -> None:
         result: list[PolicyAction] = []

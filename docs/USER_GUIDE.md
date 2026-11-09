@@ -16,10 +16,10 @@ Think of it as a bouncer for AI software on your PC.
 
 | Interface | URL / app |
 |-----------|-----------|
-| Web (always works) | **http://127.0.0.1:9470** |
-| Desktop (optional) | Run `.\scripts\launch-dashboard.ps1` after starting the service |
+| Web | Opens when you run `.\scripts\start.ps1`. Later, run `.\scripts\open-dashboard.ps1` |
+| Desktop | Run `.\scripts\launch-dashboard.ps1` after starting AI Firewall |
 
-Bookmark the web URL. Port **9470** is fixed unless you change `dashboard_port` in config.
+The web dashboard needs a sign-in link, so a bookmark alone won't open it.
 
 ---
 
@@ -31,7 +31,7 @@ Bookmark the web URL. Port **9470** is fixed unless you change `dashboard_port` 
 | **Dashboard** | Live stats, pending approvals, emergency actions |
 | **Documentation** | In-app help (same info as these docs) |
 | **AI Processes** | Block, allow, or stop detected AI apps |
-| **Network** | See AI traffic; block connections or domains |
+| **Network** | Not working yet: see [the status table](../README.md#current-status) |
 | **Protected Files** | Set allow/ask/block per folder; add folders |
 | **Activity Log** | Full history of decisions |
 | **Settings** | Global policies, app rules, lockdown, export audit |
@@ -46,7 +46,7 @@ Every protected resource uses one of three modes:
 |--------|---------|
 | **allow** | AI can access silently. No popup. |
 | **ask** | You get a **pending request** on the dashboard. You must click Allow or Deny. |
-| **block** | Access is denied automatically. Logged in Activity. |
+| **block** | Access is denied automatically and logged in Activity. See [what block really does](CONFIGURATION.md#policy-values-explained). |
 
 If you are unsure, use **ask**. That is the default everywhere.
 
@@ -124,7 +124,7 @@ Out of the box (`config/default.json`):
 | Passwords, Financial folders | block |
 | Network to AI domains | ask |
 | Clipboard (sensitive content) | ask |
-| Screenshots | block |
+| Screenshots | block (has no real effect today) |
 | Microphone / camera | ask |
 
 Sensitive clipboard patterns include: `password`, `api_key`, `secret`, `token`, OpenAI-style keys (`sk-...`).
@@ -138,11 +138,7 @@ Sensitive clipboard patterns include: `password`, `api_key`, `secret`, `token`, 
 | View dashboard | Yes | Yes |
 | Approve/deny requests | Yes | Yes |
 | Change policies in UI | Yes | Yes |
-| Block domains (firewall rules) | May fail silently | Works |
 | Hosts-file browser blocking | No | Yes (`configure-browser-gpo.ps1`) |
-| Install kernel minifilter | No | Yes |
-
-**Tip:** Right-click PowerShell → **Run as administrator**, then `.\scripts\start.ps1` if you need full network blocking.
 
 ---
 
@@ -152,7 +148,7 @@ Sensitive clipboard patterns include: `password`, `api_key`, `secret`, `token`, 
 2. Run `.\scripts\start-policy-server.ps1` for a local test server.
 3. Set in config:
    ```json
-   "enterprise_policy_url": "http://your-server:9480/policy.json",
+   "enterprise_policy_url": "https://your-server.example/policy.json",
    "enterprise_sync_seconds": 300
    ```
 4. Clients pull policy every 5 minutes and apply it.
@@ -161,7 +157,7 @@ Sensitive clipboard patterns include: `password`, `api_key`, `secret`, `token`, 
 
 ## Daily workflow (recommended)
 
-1. Start AI Firewall once per boot: `.\scripts\start.ps1` (or use Windows Service install).
+1. Start AI Firewall once per boot: `.\scripts\start.ps1`.
 2. Keep dashboard tab open or check it when using AI tools.
 3. Review **Activity Log** weekly.
 4. Adjust **Protected Files** and **App Rules** as you learn what you trust.
