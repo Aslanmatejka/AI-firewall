@@ -108,9 +108,11 @@ try {
 
     Check 'only administrators can control the service' {
         $sddl = (sc.exe sdshow AiShield | Out-String).Trim()
-        if ($sddl -notmatch '\(A;;CCLCSWLOCRRC;;;AU\)') { throw "unexpected permissions: $sddl" }
-        if ($sddl -match ';;;(IU|WD|BU)\)') { throw "too open: $sddl" }
-        $sddl
+        # Only the access list matters here; the audit list after S: names Everyone by default.
+        $dacl = ($sddl -split 'S:')[0]
+        if ($dacl -notmatch '\(A;;CCLCSWLOCRRC;;;AU\)') { throw "unexpected permissions: $dacl" }
+        if ($dacl -match ';;;(IU|WD|BU)\)') { throw "too open: $dacl" }
+        $dacl
     }
 
     Check 'old service, firewall rule and hosts entries are gone' {
@@ -218,7 +220,10 @@ try {
         if ($code -ne 0) { throw "msiexec exit code $code" }
         Wait-Until { (Test-Path $Database) -and (Get-Item $Database).Length -gt 0 } 30 'the policy database' | Out-Null
         Test-LockedDown $Data
-        $header = [Text.Encoding]::ASCII.GetString([IO.File]::ReadAllBytes($Database)[0..14])
+        # The service has the database open, so read it the way SQLite allows.
+        $stream = [IO.File]::Open($Database, 'Open', 'Read', 'ReadWrite')
+        try { $bytes = [byte[]]::new(15); [void]$stream.Read($bytes, 0, 15) } finally { $stream.Dispose() }
+        $header = [Text.Encoding]::ASCII.GetString($bytes)
         if ($header -ne 'SQLite format 3') { throw "policy.db isn't the service's database" }
         $aside = Get-ChildItem $env:ProgramData -Directory -Filter 'AiShield.untrusted-*' -Force
         if (-not $aside) { throw 'the planted folder was not moved aside' }
