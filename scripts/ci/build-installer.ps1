@@ -27,12 +27,14 @@ Copy-Item (Join-Path $Root 'installer\bin\Release\AiShield.msi') $msi -Force
 
 # Read the version back from the package, so a stale build can't pass as the requested one.
 $installer = New-Object -ComObject WindowsInstaller.Installer
-$database = $installer.GetType().InvokeMember('OpenDatabase', 'InvokeMethod', $null, $installer, @($msi, 0))
+# PowerShell 7 wraps values in objects COM can't read, so pass plain typed values.
+$msiPath = [string](Resolve-Path $msi).Path
+$database = $installer.GetType().InvokeMember('OpenDatabase', 'InvokeMethod', $null, $installer, [object[]]@($msiPath, [int]0))
 $query = "SELECT ``Value`` FROM ``Property`` WHERE ``Property`` = 'ProductVersion'"
-$view = $database.GetType().InvokeMember('OpenView', 'InvokeMethod', $null, $database, @($query))
+$view = $database.GetType().InvokeMember('OpenView', 'InvokeMethod', $null, $database, [object[]]@([string]$query))
 $view.GetType().InvokeMember('Execute', 'InvokeMethod', $null, $view, $null)
 $record = $view.GetType().InvokeMember('Fetch', 'InvokeMethod', $null, $view, $null)
-$built = $record.GetType().InvokeMember('StringData', 'GetProperty', $null, $record, @(1))
+$built = $record.GetType().InvokeMember('StringData', 'GetProperty', $null, $record, [object[]]@([int]1))
 $view.GetType().InvokeMember('Close', 'InvokeMethod', $null, $view, $null)
 [void][Runtime.InteropServices.Marshal]::ReleaseComObject($view)
 [void][Runtime.InteropServices.Marshal]::ReleaseComObject($database)
