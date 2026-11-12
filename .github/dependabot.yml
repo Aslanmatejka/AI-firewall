@@ -15,3 +15,11 @@ updates:
     directory: /python
     schedule:
       interval: weekly
+  - package-ecosystem: nuget
+    directory: /installer
+    schedule:
+      interval: weekly
+    ignore:
+      # WiX 6 and later charge organizations earning revenue a maintenance fee. Staying on 5 is deliberate.
+      - dependency-name: "WixToolset.*"
+        update-types: ["version-update:semver-major"]

@@ -26,12 +26,12 @@ internal sealed class ClientVerifier(ServiceLayout layout)
     }
 }
 
-internal sealed class PipeServer(ShieldBroker broker, ClientVerifier verifier, ServiceLayout layout, ILogger<PipeServer> log) : BackgroundService
+internal sealed class PipeServer(ShieldBroker broker, ClientVerifier verifier, ServiceLayout layout, ILogger<PipeServer> log) : CriticalService(log)
 {
     private const int Listeners = 4;
     private static readonly TimeSpan RequestReadTimeout = TimeSpan.FromSeconds(10);
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task RunAsync(CancellationToken stoppingToken)
     {
         NamedPipeServerStream first;
         try

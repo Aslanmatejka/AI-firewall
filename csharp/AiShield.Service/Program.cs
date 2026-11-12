@@ -15,6 +15,10 @@ using AiShield.Service.Native;
 using AiShield.Service.Sessions;
 using Microsoft.Extensions.Logging.EventLog;
 
+// The installer runs maintenance tasks through the service's own executable, as SYSTEM.
+if (args.Length == 2 && args[0] == "--maintenance")
+    return Maintenance.Run(args[1]);
+
 var layout = ServiceLayout.Resolve(args);
 
 // Everything the service stores lives where only SYSTEM and administrators can reach it.
@@ -23,7 +27,11 @@ var logDirectory = Path.Combine(layout.DataDirectory, "logs");
 Directory.CreateDirectory(logDirectory);
 
 if (layout.IsService)
+{
     SessionNative.EnablePrivileges("SeTcbPrivilege", "SeAssignPrimaryTokenPrivilege", "SeIncreaseQuotaPrivilege");
+    // Restart after any failed exit, not only crashes. The installer can't set this reliably.
+    ServiceSelfConfig.RestartOnErrorExit(PipeProtocol.ServiceName);
+}
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddWindowsService(options => options.ServiceName = PipeProtocol.ServiceName);
@@ -101,11 +109,12 @@ if (!layout.InstallProtected)
         + "and the secure prompt is off.", layout.InstallProblem);
 }
 host.Run();
+return 0;
 
 /// <summary>Blocks requests nobody answered in time, and everything pending at shutdown.</summary>
-internal sealed class ApprovalExpiry(ApprovalQueue queue, ILogger<ApprovalExpiry> log) : BackgroundService
+internal sealed class ApprovalExpiry(ApprovalQueue queue, ILogger<ApprovalExpiry> log) : CriticalService(log)
 {
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task RunAsync(CancellationToken stoppingToken)
     {
         using var timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
         try

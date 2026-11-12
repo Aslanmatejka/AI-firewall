@@ -1,0 +1,21 @@
+<Project Sdk="WixToolset.Sdk/5.0.2">
+  <!--
+    Builds AiShield.msi from a published folder (see scripts\ci\publish.ps1):
+      dotnet build installer\AiShield.Installer.wixproj -p:StagingDir=<published folder> -p:ProductVersion=<x.y.z>
+    WiX 5 is the last version without the maintenance fee WiX 6 introduced for organizations earning revenue.
+  -->
+  <PropertyGroup>
+    <OutputName>AiShield</OutputName>
+    <OutputType>Package</OutputType>
+    <InstallerPlatform>x64</InstallerPlatform>
+    <StagingDir Condition="'$(StagingDir)' == ''">$(MSBuildThisFileDirectory)..\staging</StagingDir>
+    <ProductVersion Condition="'$(ProductVersion)' == ''">0.0.1</ProductVersion>
+    <DefineConstants>Staging=$([System.IO.Path]::GetFullPath('$(StagingDir)'));ProductVersion=$(ProductVersion)</DefineConstants>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- ICE60: some .NET runtime DLLs carry a version but no language. Harmless for non-font files. -->
+    <SuppressIces>ICE60</SuppressIces>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="WixToolset.Util.wixext" Version="5.0.2" />
+  </ItemGroup>
+</Project>

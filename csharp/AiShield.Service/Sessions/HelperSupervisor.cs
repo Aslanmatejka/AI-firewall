@@ -10,7 +10,7 @@ namespace AiShield.Service.Sessions;
 /// Keeps the desktop app running in every signed-in session and brings it back if it's killed. If the
 /// user closes it on purpose, it stays closed until they next sign in.
 /// </summary>
-internal sealed class HelperSupervisor(ServiceLayout layout, ILogger<HelperSupervisor> log) : BackgroundService, IHelperControl
+internal sealed class HelperSupervisor(ServiceLayout layout, ILogger<HelperSupervisor> log) : CriticalService(log), IHelperControl
 {
     private static readonly TimeSpan Tick = TimeSpan.FromSeconds(2);
     private static readonly TimeSpan StableRun = TimeSpan.FromSeconds(30);
@@ -33,7 +33,7 @@ internal sealed class HelperSupervisor(ServiceLayout layout, ILogger<HelperSuper
         log.LogInformation("The desktop app in session {Session} was closed on purpose and won't be restarted", sessionId);
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task RunAsync(CancellationToken stoppingToken)
     {
         if (!layout.IsService || !layout.InstallProtected || !File.Exists(layout.DashboardExe))
         {

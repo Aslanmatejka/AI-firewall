@@ -13,6 +13,8 @@ using Microsoft.Win32;
 //   attack <install dir>             try everything an AI app running as the user might, expect all to fail
 //   client <op> [json args]          send one request to the service and print the reply
 //   consent-isolation <desktop>      while a prompt is open, try to reach its desktop and process
+//   squat-folder <path>              before install, create the data folder with a planted database
+//   squat-junction <path> <target>   before install, make the data folder a junction to <target>
 return args.FirstOrDefault() switch
 {
     "as-basic-user" => BasicUser.Run(args[1..]),
@@ -20,6 +22,8 @@ return args.FirstOrDefault() switch
     "attack" when args.Length > 1 => Attack.Run(args[1]),
     "client" when args.Length > 1 => await Client.RunAsync(args[1], args.Length > 2 ? args[2] : null),
     "consent-isolation" when args.Length > 1 => ConsentIsolation.Run(args[1]),
+    "squat-folder" when args.Length > 1 => Squat.Folder(args[1]),
+    "squat-junction" when args.Length > 2 => Squat.Junction(args[1], args[2]),
     _ => Usage(),
 };
 
@@ -190,4 +194,30 @@ internal static class Identity
     public static bool IsAdmin() => new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
 
     public static int IntegrityRid() => Native.IntegrityRid();
+}
+
+/// <summary>What an ordinary user could plant where the service keeps its data, before it's installed.</summary>
+internal static class Squat
+{
+    public static int Folder(string path)
+    {
+        Directory.CreateDirectory(path);
+        File.WriteAllText(Path.Combine(path, "policy.db"), "planted by an ordinary user");
+        Console.WriteLine($"Created {path} with a planted policy.db");
+        return 0;
+    }
+
+    public static int Junction(string path, string target)
+    {
+        Directory.CreateDirectory(target);
+        File.WriteAllText(Path.Combine(target, "marker.txt"), "must survive");
+        using var mklink = Process.Start(new ProcessStartInfo("cmd.exe", $"/c mklink /J \"{path}\" \"{target}\"")
+        {
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+        })!;
+        Console.Write(mklink.StandardOutput.ReadToEnd());
+        mklink.WaitForExit();
+        return new DirectoryInfo(path).Attributes.HasFlag(FileAttributes.ReparsePoint) ? 0 : 1;
+    }
 }

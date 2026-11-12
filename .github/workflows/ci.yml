@@ -132,6 +132,58 @@ jobs:
           path: artifacts/
           if-no-files-found: ignore
 
+  installer:
+    # Builds the MSI, then installs, upgrades, downgrades and uninstalls it on an elevated runner.
+    runs-on: windows-latest
+    timeout-minutes: 40
+    env:
+      DOTNET_NOLOGO: "1"
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          global-json-file: global.json
+      - name: Publish
+        shell: pwsh
+        run: |
+          ./scripts/ci/publish.ps1 -Configuration Release -Output staging
+          ./scripts/ci/assert-no-test-hooks.ps1 -Path staging
+          dotnet publish csharp/AiShield.TamperProbe/AiShield.TamperProbe.csproj -c Release -r win-x64 -o probe -v quiet
+      - name: Build an older and a newer installer
+        id: versions
+        shell: pwsh
+        run: |
+          $props = [xml](Get-Content csharp/Directory.Build.props -Raw)
+          $old = [version](($props.Project.PropertyGroup | Where-Object { $_.Version } | Select-Object -First 1).Version)
+          $new = "$($old.Major).$($old.Minor).$($old.Build + 1)"
+          ./scripts/ci/build-installer.ps1 -Staging staging -Output msi -Version "$old"
+          ./scripts/ci/build-installer.ps1 -Staging staging -Output msi -Version $new
+          "old=$old" >> $env:GITHUB_OUTPUT
+          "new=$new" >> $env:GITHUB_OUTPUT
+      - name: Install, upgrade and uninstall
+        shell: pwsh
+        run: >
+          ./scripts/ci/installer-integration.ps1
+          -OldMsi msi/AiShield-${{ steps.versions.outputs.old }}.msi
+          -NewMsi msi/AiShield-${{ steps.versions.outputs.new }}.msi
+          -NewVersion ${{ steps.versions.outputs.new }}
+          -Probe probe/AiShield.TamperProbe.exe
+          -Artifacts artifacts
+      - name: Keep installer logs
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: installer-logs
+          path: artifacts/
+          if-no-files-found: ignore
+      - name: Keep the unsigned test installer
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: AiShield-unsigned-test-build
+          path: msi/AiShield-${{ steps.versions.outputs.old }}.msi
+          retention-days: 14
+
   secrets:
     runs-on: ubuntu-latest
     steps:

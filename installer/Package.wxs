@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+
+  <!-- The UpgradeCode identifies AI Firewall across all versions. Never change it. -->
+  <Package Name="AI Firewall"
+           Manufacturer="Aslan"
+           Version="$(var.ProductVersion)"
+           UpgradeCode="8F989FD8-5960-4014-93ED-8593447C6CB2"
+           Scope="perMachine"
+           Compressed="yes"
+           InstallerVersion="500">
+
+    <!-- Remove the old version completely before installing, so data handling has one path. -->
+    <MajorUpgrade Schedule="afterInstallInitialize"
+                  DowngradeErrorMessage="A newer version of AI Firewall is already installed." />
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <Property Id="ARPNOMODIFY" Value="1" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/Aslanmatejka/AI-firewall" />
+
+    <!-- Ordinary users can read and run these files but not change them. The service checks this. -->
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="AiShield">
+        <Directory Id="ServiceFolder" Name="service" />
+        <Directory Id="DashboardFolder" Name="dashboard" />
+        <Directory Id="ConsentFolder" Name="consent" />
+        <Directory Id="ConfigFolder" Name="config" />
+      </Directory>
+    </StandardDirectory>
+    <StandardDirectory Id="ProgramMenuFolder" />
+
+    <!-- Debug symbols (.pdb) aren't shipped. -->
+    <Feature Id="Main" Title="AI Firewall" AllowAbsent="no">
+      <Files Directory="ServiceFolder" Include="$(var.Staging)\service\**">
+        <Exclude Files="$(var.Staging)\service\AiShield.Service.exe" />
+        <Exclude Files="$(var.Staging)\service\**\*.pdb" />
+      </Files>
+      <Files Directory="DashboardFolder" Include="$(var.Staging)\dashboard\**">
+        <Exclude Files="$(var.Staging)\dashboard\AiShield.Dashboard.exe" />
+        <Exclude Files="$(var.Staging)\dashboard\**\*.pdb" />
+      </Files>
+      <Files Directory="ConsentFolder" Include="$(var.Staging)\consent\**">
+        <Exclude Files="$(var.Staging)\consent\**\*.pdb" />
+      </Files>
+      <Files Directory="ConfigFolder" Include="$(var.Staging)\config\**" />
+      <ComponentRef Id="ServiceComponent" />
+      <ComponentRef Id="DashboardComponent" />
+    </Feature>
+
+    <Component Id="ServiceComponent" Directory="ServiceFolder">
+      <File Id="ServiceExe" Source="$(var.Staging)\service\AiShield.Service.exe" KeyPath="yes" />
+      <ServiceInstall Name="AiShield"
+                      DisplayName="AI Firewall"
+                      Description="Controls what AI software can access on this PC"
+                      Type="ownProcess"
+                      Start="auto"
+                      Account="LocalSystem"
+                      ErrorControl="normal"
+                      Vital="yes">
+        <!-- Restart after a crash or an exit with an error, and forget old failures after a day. -->
+        <util:ServiceConfig FirstFailureActionType="restart"
+                            SecondFailureActionType="restart"
+                            ThirdFailureActionType="restart"
+                            RestartServiceDelayInSeconds="5"
+                            ResetPeriodInDays="1" />
+        <!-- Signed-in users may check whether it's running. Only SYSTEM and administrators may control it. -->
+        <PermissionEx Sddl="D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;CCLCSWLOCRRC;;;AU)" />
+      </ServiceInstall>
+      <ServiceControl Name="AiShield" Start="install" Stop="both" Remove="uninstall" Wait="yes" />
+    </Component>
+
+    <Component Id="DashboardComponent" Directory="DashboardFolder">
+      <File Id="DashboardExe" Source="$(var.Staging)\dashboard\AiShield.Dashboard.exe" KeyPath="yes">
+        <Shortcut Id="StartMenuShortcut"
+                  Directory="ProgramMenuFolder"
+                  Name="AI Firewall"
+                  Description="See and control what AI apps can access"
+                  WorkingDirectory="DashboardFolder"
+                  Advertise="yes" />
+      </File>
+    </Component>
+
+    <!--
+      Maintenance runs the installed service executable as SYSTEM. On removal (uninstall, upgrade or
+      repair) it closes the desktop app first so its files can go. A full uninstall also removes policy
+      and logs; an upgrade keeps them. Before installing the service it removes what older versions left.
+    -->
+    <CustomAction Id="StopApps" FileRef="ServiceExe" ExeCommand="--maintenance stop-apps"
+                  Execute="deferred" Impersonate="no" Return="ignore" />
+    <CustomAction Id="RemoveData" FileRef="ServiceExe" ExeCommand="--maintenance remove-data"
+                  Execute="deferred" Impersonate="no" Return="ignore" />
+    <CustomAction Id="RemoveLegacy" FileRef="ServiceExe" ExeCommand="--maintenance remove-legacy"
+                  Execute="deferred" Impersonate="no" Return="check" />
+
+    <InstallExecuteSequence>
+      <Custom Action="StopApps" After="StopServices" Condition="Installed" />
+      <Custom Action="RemoveData" After="StopApps" Condition="REMOVE~=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE" />
+      <Custom Action="RemoveLegacy" Before="InstallServices" Condition="NOT REMOVE" />
+    </InstallExecuteSequence>
+  </Package>
+</Wix>
