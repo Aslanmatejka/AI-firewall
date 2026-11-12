@@ -71,6 +71,8 @@ internal static unsafe partial class SessionNative
     private const uint TokenAssignPrimary = 0x0001;
     private const uint TokenAdjustDefault = 0x0080;
     private const uint TokenAdjustSessionId = 0x0100;
+    private const uint Synchronize = 0x00100000;
+    private const uint ProcessQueryLimitedInformation = 0x1000;
 
     /// <summary>Sessions where someone is signed in and at the keyboard or connected remotely.</summary>
     public static IReadOnlyList<int> ActiveUserSessions()
@@ -153,6 +155,18 @@ internal static unsafe partial class SessionNative
                 return Create(restricted, exe, arguments, 0);
             }
         }
+    }
+
+    /// <summary>Takes charge of a process that's already running, such as after a service restart.</summary>
+    public static LaunchedProcess? Adopt(int pid)
+    {
+        var handle = OpenProcess(Synchronize | ProcessQueryLimitedInformation, false, (uint)pid);
+        if (handle.IsInvalid)
+        {
+            handle.Dispose();
+            return null;
+        }
+        return new LaunchedProcess(handle, pid);
     }
 
     /// <summary>LocalSystem holds these privileges but may not have them switched on.</summary>
@@ -292,6 +306,9 @@ internal static unsafe partial class SessionNative
 
     [LibraryImport("kernel32.dll")]
     private static partial nint GetCurrentProcess();
+
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    private static partial SafeProcessHandle OpenProcess(uint access, [MarshalAs(UnmanagedType.Bool)] bool inheritHandle, uint processId);
 
     [LibraryImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]

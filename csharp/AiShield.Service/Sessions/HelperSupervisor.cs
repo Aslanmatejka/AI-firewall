@@ -79,6 +79,16 @@ internal sealed class HelperSupervisor(ServiceLayout layout, ILogger<HelperSuper
 
             if (slot.Suppressed || now < slot.NextAttempt)
                 continue;
+
+            // After a service restart the desktop app is usually still running. Watch it rather than
+            // start a second copy that would only see the first and exit.
+            if (FindRunningApp(sessionId) is { } running)
+            {
+                slot.Process = running;
+                slot.StartedAt = now - StableRun;
+                log.LogInformation("Watching the desktop app already running in session {Session} as PID {Pid}", sessionId, running.Id);
+                continue;
+            }
             try
             {
                 slot.Process = SessionNative.StartAsUser(sessionId, layout.DashboardExe, "--background");
@@ -91,6 +101,22 @@ internal sealed class HelperSupervisor(ServiceLayout layout, ILogger<HelperSuper
                 log.LogWarning(ex, "Couldn't start the desktop app in session {Session}", sessionId);
             }
         }
+    }
+
+    private LaunchedProcess? FindRunningApp(int sessionId)
+    {
+        foreach (var process in System.Diagnostics.Process.GetProcessesByName(Path.GetFileNameWithoutExtension(layout.DashboardExe)))
+        {
+            using (process)
+            {
+                if (process.SessionId != sessionId)
+                    continue;
+                var image = AiShield.Core.Windows.NativeProcess.TryGetImagePath(process.Id);
+                if (image is not null && string.Equals(Path.GetFullPath(image), layout.DashboardExe, StringComparison.OrdinalIgnoreCase))
+                    return SessionNative.Adopt(process.Id);
+            }
+        }
+        return null;
     }
 
     private void OnExited(int sessionId, Slot slot, LaunchedProcess process, DateTimeOffset now)

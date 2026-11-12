@@ -178,9 +178,13 @@ try {
         'camera block and the Ollama rule survived'
     }
 
-    Check 'desktop app comes back after the upgrade' {
-        $app = Wait-Until { Get-Process AiShield.Dashboard -ErrorAction SilentlyContinue | Where-Object SessionId -eq $MySession } 30 'the desktop app'
-        "PID $($app.Id)"
+    Check 'one desktop app after the upgrade and a service restart' {
+        Wait-Until { Get-Process AiShield.Dashboard -ErrorAction SilentlyContinue | Where-Object SessionId -eq $MySession } 30 'the desktop app' | Out-Null
+        # A restarted service must watch the running copy, not keep starting new ones.
+        Start-Sleep -Seconds 8
+        $apps = @(Get-Process AiShield.Dashboard -ErrorAction SilentlyContinue | Where-Object SessionId -eq $MySession)
+        if ($apps.Count -ne 1) { throw "$($apps.Count) copies running: $($apps.Id -join ', ')" }
+        "PID $($apps[0].Id)"
     }
 
     Check 'downgrade is refused' {
