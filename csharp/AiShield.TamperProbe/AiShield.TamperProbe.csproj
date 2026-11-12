@@ -8,6 +8,8 @@
     <SelfContained>true</SelfContained>
     <PublishSingleFile>true</PublishSingleFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <!-- The analyzer pulls in a package whose version follows the SDK patch, breaking locked restores. -->
+    <EnableSingleFileAnalyzer>false</EnableSingleFileAnalyzer>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\AiShield.Core\AiShield.Core.csproj" />

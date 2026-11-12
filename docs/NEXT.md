@@ -36,7 +36,7 @@ One .NET 10 codebase with three processes:
 | M0 | Repo cleanup, .NET 10, stricter CI | Done |
 | M1 | Contain the worst risks in today's code | Done |
 | M2 | Protected service core and Consent prompt | Done (installer in M3) |
-| M3 | Real installer (MSI), upgrade, clean uninstall | Planned |
+| M3 | Real installer (MSI), upgrade, clean uninstall | In progress |
 | M4 | Network detection and blocking that works | Planned |
 | M5 | File, device and clipboard guards in C#; Python removed | Planned |
 | M6 | Operational hardening; signed enterprise policy; opt-in web dashboard | Planned |

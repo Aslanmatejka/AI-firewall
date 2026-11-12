@@ -1,11 +1,11 @@
 <Project>
   <ItemGroup>
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.14" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.14" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.14" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.15" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.15" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.15" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.15" />
     <PackageVersion Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.2.8" />
-    <PackageVersion Include="System.ServiceProcess.ServiceController" Version="10.0.14" />
+    <PackageVersion Include="System.ServiceProcess.ServiceController" Version="10.0.15" />
     <PackageVersion Include="xunit.v3" Version="4.0.3" />
   </ItemGroup>
 </Project>
