@@ -85,18 +85,42 @@
       Maintenance runs the installed service executable as SYSTEM. On removal (uninstall, upgrade or
       repair) it closes the desktop app first so its files can go. A full uninstall also removes policy
       and logs; an upgrade keeps them. Before installing the service it removes what older versions left.
+
+      Everything runs through WixQuietExec, which shows no window. A standard user can start a repair,
+      and a console window opened by a SYSTEM process on their desktop is a known way to get a SYSTEM
+      shell. Paths come from INSTALLFOLDER because a file reference is blank while it's being removed.
     -->
-    <CustomAction Id="StopApps" FileRef="ServiceExe" ExeCommand="--maintenance stop-apps"
+    <SetProperty Id="StopApps" Sequence="execute" Before="StopApps" Condition="Installed"
+                 Value="&quot;[INSTALLFOLDER]service\AiShield.Service.exe&quot; --maintenance stop-apps" />
+    <CustomAction Id="StopApps" BinaryRef="Wix4UtilCA_X64" DllEntry="WixQuietExec"
                   Execute="deferred" Impersonate="no" Return="ignore" />
-    <CustomAction Id="RemoveData" FileRef="ServiceExe" ExeCommand="--maintenance remove-data"
+
+    <SetProperty Id="RemoveData" Sequence="execute" Before="RemoveData"
+                 Condition="REMOVE~=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE"
+                 Value="&quot;[INSTALLFOLDER]service\AiShield.Service.exe&quot; --maintenance remove-data" />
+    <CustomAction Id="RemoveData" BinaryRef="Wix4UtilCA_X64" DllEntry="WixQuietExec"
                   Execute="deferred" Impersonate="no" Return="ignore" />
-    <CustomAction Id="RemoveLegacy" FileRef="ServiceExe" ExeCommand="--maintenance remove-legacy"
+
+    <SetProperty Id="RemoveLegacy" Sequence="execute" Before="RemoveLegacy" Condition="NOT REMOVE"
+                 Value="&quot;[INSTALLFOLDER]service\AiShield.Service.exe&quot; --maintenance remove-legacy" />
+    <CustomAction Id="RemoveLegacy" BinaryRef="Wix4UtilCA_X64" DllEntry="WixQuietExec"
+                  Execute="deferred" Impersonate="no" Return="check" />
+
+    <!--
+      The service keeps only the privileges it uses: to start programs in a user's session and to read
+      process events. Without debug, backup, restore, take-ownership or driver-loading privileges, a
+      flaw in the service gives an attacker far less.
+    -->
+    <SetProperty Id="RestrictPrivileges" Sequence="execute" Before="RestrictPrivileges" Condition="NOT REMOVE"
+                 Value="&quot;[System64Folder]sc.exe&quot; privs AiShield SeTcbPrivilege/SeAssignPrimaryTokenPrivilege/SeIncreaseQuotaPrivilege/SeChangeNotifyPrivilege/SeCreateGlobalPrivilege/SeSystemProfilePrivilege" />
+    <CustomAction Id="RestrictPrivileges" BinaryRef="Wix4UtilCA_X64" DllEntry="WixQuietExec"
                   Execute="deferred" Impersonate="no" Return="check" />
 
     <InstallExecuteSequence>
       <Custom Action="StopApps" After="StopServices" Condition="Installed" />
       <Custom Action="RemoveData" After="StopApps" Condition="REMOVE~=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE" />
       <Custom Action="RemoveLegacy" Before="InstallServices" Condition="NOT REMOVE" />
+      <Custom Action="RestrictPrivileges" After="InstallServices" Condition="NOT REMOVE" />
     </InstallExecuteSequence>
   </Package>
 </Wix>

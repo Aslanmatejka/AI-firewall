@@ -107,7 +107,8 @@ The replacement for the Python engine. It isn't installable yet: the installer a
 - **Trusted desktop app:** the service trusts a caller only when Windows reports its program as `dashboard\AiShield.Dashboard.exe` inside the install folder, and only when that folder is protected from ordinary users. A copy elsewhere, or a build run from the repo, isn't trusted.
 - **Why the secure prompt:** software running as the user can inject into or drive the desktop app, so being the desktop app isn't enough to loosen anything.
 - **The prompt:** it runs as SYSTEM on its own desktop, like UAC, so the user's programs can't see, click or read it. `Allow` only works after two seconds.
-- **The pipe:** it refuses network clients. Only SYSTEM and administrators can create instances of it, and clients check the service owns it before sending anything.
+- **The pipe:** its name is random each start and published in `HKLM\SOFTWARE\AiShield`, which only administrators can change. It refuses network clients, gives unknown programs a small separate budget, and only SYSTEM and administrators can create instances. Clients check the service owns it before sending anything.
+- **More:** [SECURITY-MODEL.md](SECURITY-MODEL.md) lists every defense, what CI proves, and the known limits.
 - **Data:** policy and audit live in `%ProgramData%\AiShield`, which only SYSTEM and administrators can open. Anything planted there first is moved aside.
 
 ### Guards

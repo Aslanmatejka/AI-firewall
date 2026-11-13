@@ -19,6 +19,7 @@ Start-Sleep -Milliseconds 500
 
 if (Test-Path $Install) { Remove-Item $Install -Recurse -Force }
 if ($RemoveData) {
+    Remove-Item 'HKLM:\SOFTWARE\AiShield' -Recurse -Force -ErrorAction SilentlyContinue
     $data = Join-Path $env:ProgramData 'AiShield'
     if (Test-Path $data) { Remove-Item $data -Recurse -Force }
 }

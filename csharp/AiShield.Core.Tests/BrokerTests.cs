@@ -184,6 +184,14 @@ public sealed class BrokerTests : IDisposable
     }
 
     [Fact]
+    public async Task AiAppsInAnotherSessionCantBeStopped()
+    {
+        _f.Processes.Apps.Add(new TrackedAiProcess(77, "ollama.exe", @"C:\o\ollama.exe", "Ollama", 90, "program name", 2, DateTimeOffset.UnixEpoch, null));
+        Assert.False((await _f.Send(PipeOps.Terminate, new { pid = 77 })).Ok);
+        Assert.Empty(_f.Stopper.Stopped);
+    }
+
+    [Fact]
     public async Task ClosingTheDesktopAppStopsItsRestartsForThatSession()
     {
         Assert.True((await _f.Send(PipeOps.HelperExit)).Ok);

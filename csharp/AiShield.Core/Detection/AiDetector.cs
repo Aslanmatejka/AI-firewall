@@ -14,22 +14,12 @@ public sealed class AiDetector(IReadOnlyList<AiSignature> signatures)
         "node.exe", "bun.exe", "deno.exe", "python.exe", "pythonw.exe", "py.exe",
     }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
-    private static readonly FrozenSet<string> NeverAi = new[]
-    {
-        "conhost.exe", "pet.exe",
-    }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
-
-    // Extension tooling that lives inside an AI app's folder but isn't the app.
-    private static readonly string[] HelperFolders = [@"\.cursor\extensions\", @"\helpers\"];
-
     public AiMatch? Match(string imagePath, string? commandLine)
     {
+        // No exceptions by folder or name: any app could put itself in an excluded folder or take an
+        // excluded name. Helpers an AI app starts are attributed to it through the process tree instead.
         var fileName = Path.GetFileName(imagePath);
-        if (fileName.Length == 0 || NeverAi.Contains(fileName))
-            return null;
-
-        var path = imagePath.Replace('/', '\\');
-        if (HelperFolders.Any(folder => path.Contains(folder, StringComparison.OrdinalIgnoreCase)))
+        if (fileName.Length == 0)
             return null;
 
         return InterpreterHosts.Contains(fileName) ? MatchCommandLine(commandLine) : MatchFileName(fileName);

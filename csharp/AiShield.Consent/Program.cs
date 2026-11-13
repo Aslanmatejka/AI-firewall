@@ -18,6 +18,8 @@ internal static class Program
     {
         try
         {
+            // Stage one starts stage two; stage two never starts anything.
+            AiShield.Core.Windows.ProcessHardening.Apply(allowChildProcesses: !args.Contains("--stage2"));
             var request = Argument(args, "--request");
             if (request is null)
                 return ConsentExitCodes.Error;

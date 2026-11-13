@@ -13,10 +13,10 @@ namespace AiShield.Service.Sessions;
 internal sealed class ConsentPrompter(ServiceLayout layout, ILogger<ConsentPrompter> log) : IConsentPrompter, IDisposable
 {
     private static readonly TimeSpan PromptLimit = TimeSpan.FromSeconds(150);
-    private static readonly TimeSpan QuietAfterRefusal = TimeSpan.FromSeconds(3);
 
     private readonly SemaphoreSlim _one = new(1, 1);
-    private DateTimeOffset _quietUntil = DateTimeOffset.MinValue;
+    // Each refusal doubles the wait before the next prompt, from 3 seconds up to a minute.
+    private readonly RefusalBackoff _backoff = new(TimeSpan.FromSeconds(3), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(10));
 
     public async Task<ConsentOutcome> AskAsync(int sessionId, ConsentText text, CancellationToken ct)
     {
@@ -31,7 +31,7 @@ internal sealed class ConsentPrompter(ServiceLayout layout, ILogger<ConsentPromp
 
         try
         {
-            if (DateTimeOffset.UtcNow < _quietUntil)
+            if (DateTimeOffset.UtcNow < _backoff.QuietUntil(DateTimeOffset.UtcNow))
                 return ConsentOutcome.Busy;
 
             var request = Convert.ToBase64String(JsonSerializer.SerializeToUtf8Bytes(text, PipeProtocol.Json))
@@ -47,7 +47,9 @@ internal sealed class ConsentPrompter(ServiceLayout layout, ILogger<ConsentPromp
             var outcome = ConsentExitCodes.ToOutcome(exitCode);
             log.LogInformation("Secure prompt in session {Session}: {Outcome} (exit code {Code})", sessionId, outcome, exitCode);
             if (outcome != ConsentOutcome.Approved)
-                _quietUntil = DateTimeOffset.UtcNow + QuietAfterRefusal;
+                _backoff.Refused(DateTimeOffset.UtcNow);
+            else
+                _backoff.Approved();
             return outcome;
         }
         catch (Win32Exception ex)

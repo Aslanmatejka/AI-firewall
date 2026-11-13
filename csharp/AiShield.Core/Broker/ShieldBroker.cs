@@ -108,7 +108,7 @@ public sealed class ShieldBroker
                 PipeOps.LockdownOff => await ChangeGlobalsAsync(caller, request.Id, LockdownOffPlan(), ct).ConfigureAwait(false),
                 PipeOps.RestoreDefaults => await ChangeGlobalsAsync(caller, request.Id, RestoreDefaultsPlan(), ct).ConfigureAwait(false),
                 PipeOps.RevokeGrants => RevokeGrants(request.Id, ReadString(args, "app_name")),
-                PipeOps.Terminate => Terminate(request.Id, ReadInt(args, "pid")),
+                PipeOps.Terminate => Terminate(caller, request.Id, ReadInt(args, "pid")),
                 PipeOps.HelperExit => HelperExit(caller, request.Id),
 #if AISHIELD_TEST_HOOKS
                 PipeOps.TestSubmitRequest => TestSubmitRequest(request.Id, args),
@@ -323,11 +323,13 @@ public sealed class ShieldBroker
         return PipeResponse.Success(id, new { removed }, ConsentOutcome.NotNeeded);
     }
 
-    private PipeResponse Terminate(int id, int? pid)
+    private PipeResponse Terminate(PipeCaller caller, int id, int? pid)
     {
         if (pid is not > 0)
             throw new ArgumentException("pid is required");
-        if (_deps.Processes.Find(pid.Value) is null)
+        // Only an AI app in the caller's own session. Anyone can start the desktop app, so it mustn't
+        // become a way to stop programs in someone else's session.
+        if (_deps.Processes.Find(pid.Value) is not { } target || target.SessionId != caller.SessionId)
             return PipeResponse.Failure(id, PipeErrors.NotFound);
 
         var result = _deps.Stopper.Stop(pid.Value);

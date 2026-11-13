@@ -56,11 +56,15 @@ public sealed class PolicyStore : IDisposable
     private readonly Lock _gate = new();
     private readonly ShieldDefaults _defaults;
     private readonly Func<DateTimeOffset> _clock;
+    private readonly int _maxAuditRows;
+    private int _auditsSincePrune;
 
-    public PolicyStore(string databasePath, ShieldDefaults defaults, Func<DateTimeOffset>? clock = null)
+    /// <param name="maxAuditRows">The audit log keeps this many newest entries, so it can't fill the disk.</param>
+    public PolicyStore(string databasePath, ShieldDefaults defaults, Func<DateTimeOffset>? clock = null, int maxAuditRows = 100_000)
     {
         _defaults = defaults;
         _clock = clock ?? (() => DateTimeOffset.UtcNow);
+        _maxAuditRows = Math.Max(1, maxAuditRows);
         _db = new SqliteConnection(new SqliteConnectionStringBuilder
         {
             DataSource = databasePath,
@@ -73,6 +77,7 @@ public sealed class PolicyStore : IDisposable
         foreach (var (key, value) in defaults.GlobalPolicies)
             Execute("INSERT OR IGNORE INTO settings (key, value) VALUES ($key, $value)", ("$key", key), ("$value", value.ToWire()));
         Execute("INSERT OR IGNORE INTO settings (key, value) VALUES ($key, '0')", ("$key", LockdownKey));
+        PruneAudit();
     }
 
     public static string AppResourceFor(ResourceType type) => type switch
@@ -176,12 +181,22 @@ public sealed class PolicyStore : IDisposable
             : Execute("DELETE FROM grants WHERE app_name = $app", ("$app", appName));
 
     public void Audit(ShieldEvent entry)
-        => Execute(
+    {
+        Execute(
             "INSERT INTO audit_log (timestamp, severity, app_name, resource_type, resource, action, decision, message) "
             + "VALUES ($ts, $severity, $app, $type, $resource, $action, $decision, $message)",
             ("$ts", Stamp(entry.Timestamp)), ("$severity", entry.Severity.ToWire()), ("$app", entry.SourceApp),
             ("$type", entry.ResourceType.ToWire()), ("$resource", entry.Resource), ("$action", entry.Action.ToWire()),
             ("$decision", entry.UserDecision), ("$message", entry.Message));
+        if (Interlocked.Increment(ref _auditsSincePrune) >= Math.Min(1000, _maxAuditRows))
+            PruneAudit();
+    }
+
+    private void PruneAudit()
+    {
+        Interlocked.Exchange(ref _auditsSincePrune, 0);
+        Execute("DELETE FROM audit_log WHERE id <= (SELECT MAX(id) FROM audit_log) - $keep", ("$keep", _maxAuditRows));
+    }
 
     public IReadOnlyList<AuditEntryDto> GetAudit(int limit)
         => Query(

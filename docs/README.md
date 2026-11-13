@@ -10,6 +10,7 @@ Start here. Pick the guide that matches what you are trying to do.
 | Fix something that is broken | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) |
 | Understand how it works internally | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | See the rebuild plan and what v1 will promise | [NEXT.md](NEXT.md) |
+| Know what it defends against, and what it can't | [SECURITY-MODEL.md](SECURITY-MODEL.md) |
 
 ## 30-second version
 

@@ -15,6 +15,8 @@ using Microsoft.Win32;
 //   consent-isolation <desktop>      while a prompt is open, try to reach its desktop and process
 //   squat-folder <path>              before install, create the data folder with a planted database
 //   squat-junction <path> <target>   before install, make the data folder a junction to <target>
+//   flood <connections> <seconds>    hold many pipe connections that promise a 1 MB message and stall
+//   hold-pipe <name> <seconds>       create and hold a pipe with the given name
 return args.FirstOrDefault() switch
 {
     "as-basic-user" => BasicUser.Run(args[1..]),
@@ -24,6 +26,9 @@ return args.FirstOrDefault() switch
     "consent-isolation" when args.Length > 1 => ConsentIsolation.Run(args[1]),
     "squat-folder" when args.Length > 1 => Squat.Folder(args[1]),
     "squat-junction" when args.Length > 2 => Squat.Junction(args[1], args[2]),
+    "flood" when args.Length > 2 => await Flood.RunAsync(int.Parse(args[1], System.Globalization.CultureInfo.InvariantCulture),
+        int.Parse(args[2], System.Globalization.CultureInfo.InvariantCulture)),
+    "hold-pipe" when args.Length > 2 => await Flood.HoldPipeAsync(args[1], int.Parse(args[2], System.Globalization.CultureInfo.InvariantCulture)),
     _ => Usage(),
 };
 
@@ -80,8 +85,14 @@ internal static class Attack
             Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\" + PipeProtocol.ServiceName, writable: true)
                 ?? throw new InvalidOperationException("key missing")));
 
-        results.Add(Expect("pipe: open a rogue instance", () =>
-            new NamedPipeServerStream(PipeProtocol.PipeName, PipeDirection.InOut, NamedPipeServerStream.MaxAllowedServerInstances).Dispose()));
+        var pipeName = PipeProtocol.DiscoverPipeName();
+        results.Add(pipeName is null
+            ? new CheckResult("pipe: open a rogue instance", false, "the service hasn't published a pipe name")
+            : Expect("pipe: open a rogue instance", () =>
+                new NamedPipeServerStream(pipeName, PipeDirection.InOut, NamedPipeServerStream.MaxAllowedServerInstances).Dispose()));
+        results.Add(Expect("registry: change the published pipe name", () =>
+            Registry.LocalMachine.OpenSubKey(PipeProtocol.RegistryKey, writable: true)
+                ?? throw new InvalidOperationException("key missing")));
 
         results.Add(UntrustedRequest("pipe: ask from an unknown program", Environment.ProcessPath!));
         results.Add(SpoofedCopy());
@@ -153,7 +164,8 @@ internal static class Client
     public static async Task<int> RunAsync(string op, string? json)
     {
         object? args = json is null ? null : JsonDocument.Parse(json).RootElement;
-        var response = await new ShieldPipeClient().SendAsync(op, args, TimeSpan.FromMinutes(4)).ConfigureAwait(false);
+        var client = new ShieldPipeClient { ConnectTimeout = TimeSpan.FromSeconds(10) };
+        var response = await client.SendAsync(op, args, TimeSpan.FromMinutes(4)).ConfigureAwait(false);
         Console.WriteLine(response is null ? "null" : JsonSerializer.Serialize(response, PipeProtocol.Json));
         return response is null ? 3 : 0;
     }
@@ -219,5 +231,59 @@ internal static class Squat
         Console.Write(mklink.StandardOutput.ReadToEnd());
         mklink.WaitForExit();
         return new DirectoryInfo(path).Attributes.HasFlag(FileAttributes.ReparsePoint) ? 0 : 1;
+    }
+}
+
+/// <summary>Tries to starve the service of pipe connections and memory, the way a hostile program could.</summary>
+internal static class Flood
+{
+    public static async Task<int> RunAsync(int connections, int seconds)
+    {
+        var name = PipeProtocol.DiscoverPipeName();
+        if (name is null)
+        {
+            Console.WriteLine("no pipe published");
+            return 1;
+        }
+
+        var held = new List<NamedPipeClientStream>();
+        var refused = 0;
+        for (var i = 0; i < connections; i++)
+        {
+            var pipe = new NamedPipeClientStream(".", name, PipeDirection.InOut, PipeOptions.Asynchronous);
+            try
+            {
+                await pipe.ConnectAsync(500).ConfigureAwait(false);
+                // Promise a 1 MB message, then never send it.
+                await pipe.WriteAsync(new byte[] { 0x00, 0x00, 0x10, 0x00 }).ConfigureAwait(false);
+                held.Add(pipe);
+            }
+            catch (Exception ex) when (ex is IOException or TimeoutException or UnauthorizedAccessException)
+            {
+                refused++;
+                await pipe.DisposeAsync().ConfigureAwait(false);
+            }
+        }
+        Console.WriteLine($"flooding: {held.Count} connections open, {refused} refused");
+        await Task.Delay(TimeSpan.FromSeconds(seconds)).ConfigureAwait(false);
+        foreach (var pipe in held)
+            await pipe.DisposeAsync().ConfigureAwait(false);
+        return 0;
+    }
+
+    public static async Task<int> HoldPipeAsync(string name, int seconds)
+    {
+        try
+        {
+            await using var pipe = new NamedPipeServerStream(name, PipeDirection.InOut, 1);
+            Console.WriteLine($"holding {name}");
+            await Task.Delay(TimeSpan.FromSeconds(seconds)).ConfigureAwait(false);
+            return 0;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            Console.WriteLine($"couldn't hold {name}: {ex.Message}");
+            return 1;
+        }
     }
 }

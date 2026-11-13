@@ -25,6 +25,8 @@ if ($LASTEXITCODE -ne 0) { throw 'Setting service permissions failed' }
 # Restart after a crash, including exits with an error code.
 sc.exe failure AiShield reset= 86400 actions= restart/2000/restart/5000/restart/10000 | Out-Host
 sc.exe failureflag AiShield 1 | Out-Host
+# Only the privileges the service uses, as the MSI sets them.
+sc.exe privs AiShield SeTcbPrivilege/SeAssignPrimaryTokenPrivilege/SeIncreaseQuotaPrivilege/SeChangeNotifyPrivilege/SeCreateGlobalPrivilege/SeSystemProfilePrivilege | Out-Host
 
 Start-Service AiShield
 (Get-Service AiShield).WaitForStatus('Running', [TimeSpan]::FromSeconds(30))

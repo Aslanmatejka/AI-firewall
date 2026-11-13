@@ -22,15 +22,18 @@ internal sealed class HelperSupervisor(ServiceLayout layout, ILogger<HelperSuper
         public DateTimeOffset StartedAt { get; set; }
         public TimeSpan Backoff { get; set; } = Tick;
         public DateTimeOffset NextAttempt { get; set; }
-        public bool Suppressed { get; set; }
+        public DateTimeOffset SuppressedUntil { get; set; }
+        public bool Suppressed => DateTimeOffset.UtcNow < SuppressedUntil;
     }
 
     private readonly ConcurrentDictionary<int, Slot> _slots = new();
 
     public void SuppressSession(int sessionId)
     {
-        _slots.GetOrAdd(sessionId, _ => new Slot()).Suppressed = true;
-        log.LogInformation("The desktop app in session {Session} was closed on purpose and won't be restarted", sessionId);
+        // Closing the app is honored for an hour, not for the whole sign-in: a program that drives the
+        // app could otherwise use this to keep the user's view of AI Firewall away for good.
+        _slots.GetOrAdd(sessionId, _ => new Slot()).SuppressedUntil = DateTimeOffset.UtcNow + TimeSpan.FromHours(1);
+        log.LogInformation("The desktop app in session {Session} was closed on purpose and won't be restarted for an hour", sessionId);
     }
 
     protected override async Task RunAsync(CancellationToken stoppingToken)

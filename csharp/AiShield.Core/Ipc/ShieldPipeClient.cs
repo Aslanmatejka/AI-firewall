@@ -20,12 +20,19 @@ public sealed class ShieldPipeClient
     /// </summary>
     public bool RequireServiceServer { get; init; } = true;
 
+    /// <summary>A fixed pipe name instead of the one the service publishes. For tests.</summary>
+    public string? PipeName { get; init; }
+
     /// <summary>Returns null if the service isn't reachable, or something other than the service owns the pipe.</summary>
     public async Task<PipeResponse?> SendAsync(string op, object? args = null, TimeSpan? timeout = null, CancellationToken ct = default)
     {
+        var pipeName = PipeName ?? PipeProtocol.DiscoverPipeName();
+        if (pipeName is null)
+            return null;
+
         // Identification lets the service check who we are without being able to act as us.
         using var pipe = new NamedPipeClientStream(
-            ".", PipeProtocol.PipeName, PipeDirection.InOut, PipeOptions.Asynchronous, TokenImpersonationLevel.Identification);
+            ".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous, TokenImpersonationLevel.Identification);
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
         deadline.CancelAfter(ConnectTimeout);
         try

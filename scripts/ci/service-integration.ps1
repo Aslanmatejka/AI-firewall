@@ -200,6 +200,31 @@ Check 'secure prompt is out of reach of the user''s programs' {
     "prompt on desktop $desktop could not be reached; lockdown stayed on"
 }
 
+Check 'a connection flood from an unknown program doesn''t lock out the desktop app' {
+    $out = Join-Path $Artifacts 'flood.txt'
+    $flood = Start-Process $Probe -ArgumentList 'as-basic-user', 'flood', '300', '25' -PassThru -NoNewWindow -RedirectStandardOutput $out
+    Start-Sleep -Seconds 8
+    $timer = [Diagnostics.Stopwatch]::StartNew()
+    $reply = Invoke-Client 'status'
+    $elapsed = [math]::Round($timer.Elapsed.TotalSeconds, 1)
+    if (-not $reply.ok) { throw 'the desktop app got no answer during the flood' }
+    $servicePid = (Get-CimInstance Win32_Service -Filter "Name='AiShield'").ProcessId
+    $memory = [math]::Round((Get-Process -Id $servicePid).WorkingSet64 / 1MB)
+    $flood.WaitForExit(60000) | Out-Null
+    if ($memory -gt 400) { throw "service memory reached $memory MB" }
+    "answered in $elapsed s during the flood; service at $memory MB; $((Get-Content $out -Raw).Trim())"
+}
+
+Check 'squatting the old fixed pipe name doesn''t stop the service' {
+    $hold = Start-Process $Probe -ArgumentList 'as-basic-user', 'hold-pipe', 'AiShield.v1', '60' -PassThru -NoNewWindow
+    Start-Sleep -Seconds 2
+    Restart-Service AiShield
+    Wait-Until { try { (Invoke-Client 'hello').ok } catch { $false } } 30 'the restarted service to answer' | Out-Null
+    Stop-Process -Id $hold.Id -Force -ErrorAction SilentlyContinue
+    $name = (Get-ItemProperty 'HKLM:\SOFTWARE\AiShield').PipeName
+    "serving on $name"
+}
+
 Check 'service restarts after being killed, with policy intact' {
     $before = (Get-CimInstance Win32_Service -Filter "Name='AiShield'").ProcessId
     taskkill /F /PID $before | Out-Host
@@ -226,6 +251,7 @@ Check 'uninstall leaves nothing running or installed' {
     if (Test-Path $Data) { throw 'data folder still there' }
     if (Get-Process AiShield.* -ErrorAction SilentlyContinue) { throw 'AI Firewall processes still running' }
     if ((logman query -ets) -match 'AiShield') { throw 'event tracing session left behind' }
+    if (Test-Path 'HKLM:\SOFTWARE\AiShield') { throw 'registry key still there' }
     'clean'
 }
 

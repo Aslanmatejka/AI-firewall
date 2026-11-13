@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Security.AccessControl;
 using System.Security.Principal;
 
@@ -18,15 +17,35 @@ public static class WellKnown
 }
 
 /// <summary>
-/// Makes sure a data folder is a real folder that only trusted accounts can reach. Anything an ordinary
-/// user put there first, whether a folder, a file or a link pointing elsewhere, is moved out of the way.
+/// Makes sure a data folder is a real folder that only trusted accounts can reach. A folder is only
+/// accepted if it's already locked down; anything else in its place is moved out of the way, never
+/// re-permissioned, because ordinary users may already have planted links inside it.
 /// </summary>
 public static class SecureDataDirectory
 {
-    public static void Ensure(string path, IReadOnlyCollection<SecurityIdentifier> trusted, Func<DateTimeOffset>? clock = null)
+    public static void Ensure(string path, IReadOnlyCollection<SecurityIdentifier> trusted)
     {
-        var now = clock ?? (() => DateTimeOffset.UtcNow);
-        for (var attempt = 0; attempt < 3; attempt++)
+        for (var attempt = 0; attempt < 10; attempt++)
+        {
+            try
+            {
+                if (!TryEnsureOnce(path, trusted))
+                    continue;
+            }
+            catch (IOException)
+            {
+                // Someone raced us between two steps. Look again.
+                continue;
+            }
+            if (IsLockedDown(path, trusted))
+                return;
+        }
+        throw new UnauthorizedAccessException($"Couldn't secure {path}");
+    }
+
+    /// <summary>Returns false if something was moved or removed and the folder needs looking at again.</summary>
+    private static bool TryEnsureOnce(string path, IReadOnlyCollection<SecurityIdentifier> trusted)
+    {
         {
             if (!Directory.Exists(path) && !File.Exists(path))
             {
@@ -42,30 +61,36 @@ public static class SecureDataDirectory
                         Directory.Delete(path);
                     else
                         File.Delete(path);
-                    continue;
+                    return false;
                 }
-                if (!attributes.HasFlag(FileAttributes.Directory) || !IsOwnedByTrusted(path, trusted))
+                // A folder ordinary users could ever write into isn't adopted, even if an administrator
+                // owns it: an older version or a manual mkdir under ProgramData leaves it user-writable.
+                if (!attributes.HasFlag(FileAttributes.Directory) || !IsLockedDown(path, trusted))
                 {
-                    MoveAside(path, attributes, now());
-                    continue;
+                    MoveAside(path, attributes);
+                    return false;
                 }
-                new DirectoryInfo(path).SetAccessControl(BuildSecurity(trusted));
             }
-
-            if (IsLockedDown(path, trusted))
-                return;
+            return true;
         }
-        throw new UnauthorizedAccessException($"Couldn't secure {path}");
     }
 
     public static bool IsLockedDown(string path, IReadOnlyCollection<SecurityIdentifier> trusted)
     {
-        if (File.GetAttributes(path).HasFlag(FileAttributes.ReparsePoint) || !IsOwnedByTrusted(path, trusted))
+        try
+        {
+            if (File.GetAttributes(path).HasFlag(FileAttributes.ReparsePoint) || !IsOwnedByTrusted(path, trusted))
+                return false;
+            var rules = new DirectoryInfo(path).GetAccessControl()
+                .GetAccessRules(includeExplicit: true, includeInherited: true, typeof(SecurityIdentifier));
+            return rules.Cast<FileSystemAccessRule>().All(rule =>
+                rule.AccessControlType == AccessControlType.Deny || trusted.Contains((SecurityIdentifier)rule.IdentityReference));
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // A folder that even hides its permissions from us was set up by someone else.
             return false;
-        var rules = new DirectoryInfo(path).GetAccessControl()
-            .GetAccessRules(includeExplicit: true, includeInherited: true, typeof(SecurityIdentifier));
-        return rules.Cast<FileSystemAccessRule>().All(rule =>
-            rule.AccessControlType == AccessControlType.Deny || trusted.Contains((SecurityIdentifier)rule.IdentityReference));
+        }
     }
 
     private static bool IsOwnedByTrusted(string path, IReadOnlyCollection<SecurityIdentifier> trusted)
@@ -86,9 +111,10 @@ public static class SecureDataDirectory
         return security;
     }
 
-    private static void MoveAside(string path, FileAttributes attributes, DateTimeOffset now)
+    /// <summary>The new name can't be guessed, so nobody can block the move by creating it first.</summary>
+    private static void MoveAside(string path, FileAttributes attributes)
     {
-        var aside = $"{path}.untrusted-{now.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture)}";
+        var aside = $"{path}.untrusted-{Guid.NewGuid():N}";
         if (attributes.HasFlag(FileAttributes.Directory))
             Directory.Move(path, aside);
         else

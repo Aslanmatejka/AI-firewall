@@ -136,9 +136,43 @@ public sealed class FileSystemTrustTests
         File.WriteAllText(Path.Combine(data, "policy.db"), "planted");
 
         // Pretend only SYSTEM is trusted, so the folder this test created counts as planted by someone else.
-        var clock = new ManualClock(new DateTimeOffset(2026, 11, 9, 12, 0, 0, TimeSpan.Zero));
-        Assert.ThrowsAny<Exception>(() => SecureDataDirectory.Ensure(data, [WellKnown.LocalSystem], () => clock.Now));
-        Assert.True(File.Exists(Path.Combine(dir.Path, "AiShield.untrusted-20261109120000", "policy.db")));
+        Assert.ThrowsAny<Exception>(() => SecureDataDirectory.Ensure(data, [WellKnown.LocalSystem]));
+        var aside = Assert.Single(Directory.GetDirectories(dir.Path, "AiShield.untrusted-*"));
+        Assert.True(File.Exists(Path.Combine(aside, "policy.db")));
+        Assert.Matches("untrusted-[0-9a-f]{32}$", aside);
+    }
+
+    [Fact]
+    public void NeverAdoptsATrustedFolderOrdinaryUsersCouldWriteInto()
+    {
+        using var dir = new TempDirectory();
+        var data = Path.Combine(dir.Path, "AiShield");
+        Directory.CreateDirectory(data);
+        File.WriteAllText(Path.Combine(data, "planted.txt"), "x");
+        var loose = new DirectoryInfo(data).GetAccessControl();
+        loose.AddAccessRule(new FileSystemAccessRule(
+            new SecurityIdentifier(WellKnownSidType.BuiltinUsersSid, null), FileSystemRights.Modify,
+            InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit, PropagationFlags.None, AccessControlType.Allow));
+        new DirectoryInfo(data).SetAccessControl(loose);
+
+        SecureDataDirectory.Ensure(data, TrustMe);
+
+        Assert.True(SecureDataDirectory.IsLockedDown(data, TrustMe));
+        Assert.False(File.Exists(Path.Combine(data, "planted.txt")));
+        var aside = Assert.Single(Directory.GetDirectories(dir.Path, "AiShield.untrusted-*"));
+        Assert.True(File.Exists(Path.Combine(aside, "planted.txt")));
+    }
+
+    [Fact]
+    public void KeepsAFolderThatIsAlreadyLockedDown()
+    {
+        using var dir = new TempDirectory();
+        var data = Path.Combine(dir.Path, "AiShield");
+        SecureDataDirectory.Ensure(data, TrustMe);
+        File.WriteAllText(Path.Combine(data, "policy.db"), "ours");
+        SecureDataDirectory.Ensure(data, TrustMe);
+        Assert.Equal("ours", File.ReadAllText(Path.Combine(data, "policy.db")));
+        Assert.Empty(Directory.GetDirectories(dir.Path, "AiShield.untrusted-*"));
     }
 
     [Fact]

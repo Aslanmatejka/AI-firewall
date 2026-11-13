@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.ServiceProcess;
 using AiShield.Core.Config;
 using AiShield.Core.Maintenance;
+using AiShield.Core.Security;
 using AiShield.Core.Windows;
 using Microsoft.Win32;
 
@@ -15,12 +16,14 @@ internal static class Maintenance
 {
     private const string ServiceKey = @"SYSTEM\CurrentControlSet\Services\AiShield";
     private const string EventSourceKey = @"SYSTEM\CurrentControlSet\Services\EventLog\Application\AiShield";
-    private const string ProfileList = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList";
     private static readonly string[] AppProcessNames = ["AiShield.Dashboard", "AiShield.Consent"];
 
     private static string Root => Path.GetDirectoryName(Path.TrimEndingDirectorySeparator(AppContext.BaseDirectory))!;
     private static string ServiceExe => Path.Combine(Root, "service", "AiShield.Service.exe");
     private static string DataDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "AiShield");
+
+    // Tools run by full path, so a same-named program elsewhere on the search path can't stand in for them.
+    private static string System32 => Environment.GetFolderPath(Environment.SpecialFolder.System);
 
     public static int Run(string task)
     {
@@ -109,7 +112,7 @@ internal static class Maintenance
             }
         }
 
-        RunTool("sc.exe", "delete AiShield");
+        RunTool(Path.Combine(System32, "sc.exe"), "delete AiShield");
         for (var i = 0; i < 40 && Registry.LocalMachine.OpenSubKey(ServiceKey) is { } still; i++)
         {
             still.Dispose();
@@ -121,7 +124,7 @@ internal static class Maintenance
     private static void RemoveLegacyBlocks()
     {
         RunTool(
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), @"WindowsPowerShell\v1.0\powershell.exe"),
+            Path.Combine(System32, @"WindowsPowerShell\v1.0\powershell.exe"),
             "-NoProfile -NonInteractive -Command \"Get-NetFirewallRule -DisplayName 'AiShield-Block-*','AiShield-WFP-*' "
             + "-ErrorAction SilentlyContinue | Remove-NetFirewallRule\"");
 
@@ -138,44 +141,32 @@ internal static class Maintenance
         }
     }
 
-    /// <summary>A full uninstall removes policy, logs and anything left from a planted data folder.</summary>
+    /// <summary>
+    /// A full uninstall removes the service's policy and logs. It never deletes anything an ordinary user
+    /// can change: doing that as SYSTEM through a planted link is a classic way to take over a PC. So
+    /// folders a user planted before install, which were moved aside, stay theirs, and so does the
+    /// desktop app's small error log in each user's profile.
+    /// </summary>
     private static void RemoveData()
     {
-        RunTool("logman.exe", "stop AiShield-ProcessGuard -ets");
+        RunTool(Path.Combine(System32, "logman.exe"), "stop AiShield-ProcessGuard -ets");
 
-        var parent = Path.GetDirectoryName(DataDirectory)!;
-        foreach (var dir in Directory.EnumerateDirectories(parent, "AiShield*"))
+        if (Directory.Exists(DataDirectory))
         {
-            var name = Path.GetFileName(dir);
-            if (name == "AiShield" || name.StartsWith("AiShield.untrusted-", StringComparison.Ordinal))
-                DeleteDirectory(dir);
+            // Only a folder nobody but SYSTEM and administrators could ever write into is safe to empty.
+            if (SecureDataDirectory.IsLockedDown(DataDirectory, WellKnown.SystemAndAdministrators))
+            {
+                Directory.Delete(DataDirectory, recursive: true);
+                Console.WriteLine($"Removed {DataDirectory}");
+            }
+            else
+            {
+                Console.Error.WriteLine($"Left {DataDirectory} alone: ordinary users can change it");
+            }
         }
 
         Registry.LocalMachine.DeleteSubKeyTree(EventSourceKey, throwOnMissingSubKey: false);
-
-        // The desktop app keeps a small error log in each user's profile.
-        using var profiles = Registry.LocalMachine.OpenSubKey(ProfileList);
-        foreach (var sid in profiles?.GetSubKeyNames() ?? [])
-        {
-            using var profile = profiles!.OpenSubKey(sid);
-            if (profile?.GetValue("ProfileImagePath") is not string home)
-                continue;
-            var appFolder = Path.Combine(Environment.ExpandEnvironmentVariables(home), "AppData", "Local", "AiShield");
-            if (!Directory.Exists(appFolder))
-                continue;
-            foreach (var log in Directory.EnumerateFiles(appFolder, "dashboard.log*"))
-                File.Delete(log);
-            if (!Directory.EnumerateFileSystemEntries(appFolder).Any())
-                Directory.Delete(appFolder);
-        }
-    }
-
-    private static void DeleteDirectory(string path)
-    {
-        var attributes = File.GetAttributes(path);
-        // A planted link is removed itself, never followed.
-        Directory.Delete(path, recursive: !attributes.HasFlag(FileAttributes.ReparsePoint));
-        Console.WriteLine($"Removed {path}");
+        Registry.LocalMachine.DeleteSubKeyTree(Core.Ipc.PipeProtocol.RegistryKey, throwOnMissingSubKey: false);
     }
 
     private static void RunTool(string tool, string arguments)

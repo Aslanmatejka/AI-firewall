@@ -106,6 +106,35 @@ try {
         'three restart actions, failure flag on'
     }
 
+    Check 'service keeps only the privileges it uses' {
+        $privs = sc.exe qprivs AiShield | Out-String
+        foreach ($needed in 'SeTcbPrivilege', 'SeAssignPrimaryTokenPrivilege', 'SeIncreaseQuotaPrivilege') {
+            if ($privs -notmatch $needed) { throw "missing $needed" }
+        }
+        foreach ($dropped in 'SeDebugPrivilege', 'SeBackupPrivilege', 'SeRestorePrivilege', 'SeTakeOwnershipPrivilege', 'SeLoadDriverPrivilege') {
+            if ($privs -match $dropped) { throw "still has $dropped" }
+        }
+        'debug, backup, restore, take-ownership and driver-loading privileges removed'
+    }
+
+    Check 'no custom action runs an executable directly' {
+        $msiInstaller = New-Object -ComObject WindowsInstaller.Installer
+        $database = $msiInstaller.GetType().InvokeMember('OpenDatabase', 'InvokeMethod', $null, $msiInstaller, [object[]]@([string]$NewMsi, [int]0))
+        $query = "SELECT ``Action``, ``Type`` FROM ``CustomAction``"
+        $view = $database.GetType().InvokeMember('OpenView', 'InvokeMethod', $null, $database, [object[]]@([string]$query))
+        $view.GetType().InvokeMember('Execute', 'InvokeMethod', $null, $view, $null)
+        $direct = @()
+        while ($record = $view.GetType().InvokeMember('Fetch', 'InvokeMethod', $null, $view, $null)) {
+            $type = $record.GetType().InvokeMember('IntegerData', 'GetProperty', $null, $record, [object[]]@([int]2))
+            # Base types 2, 18, 34 and 50 start an executable directly, which can show a console window.
+            if (@(2, 18, 34, 50) -contains ($type -band 0x3F)) {
+                $direct += $record.GetType().InvokeMember('StringData', 'GetProperty', $null, $record, [object[]]@([int]1))
+            }
+        }
+        if ($direct) { throw "these run an executable directly: $($direct -join ', ')" }
+        'maintenance runs through WixQuietExec, with no window'
+    }
+
     Check 'only administrators can control the service' {
         $sddl = (sc.exe sdshow AiShield | Out-String).Trim()
         # Only the access list matters here; the audit list after S: names Everyone by default.
@@ -198,14 +227,15 @@ try {
     function Test-NothingLeft {
         if (Get-Service AiShield -ErrorAction SilentlyContinue) { throw 'service still registered' }
         if (Test-Path $Install) { throw 'install folder still there' }
-        $leftover = Get-ChildItem $env:ProgramData -Directory -Filter 'AiShield*' -Force
+        # A folder an ordinary user planted is moved aside and left to them; anything else must be gone.
+        $leftover = Get-ChildItem $env:ProgramData -Directory -Filter 'AiShield*' -Force | Where-Object Name -notlike 'AiShield.untrusted-*'
         if ($leftover) { throw "still in ProgramData: $($leftover.Name -join ', ')" }
+        if (Test-Path 'HKLM:\SOFTWARE\AiShield') { throw 'registry key still there' }
         if (Get-Process AiShield.* -ErrorAction SilentlyContinue) { throw 'AI Firewall processes still running' }
         if ((logman query -ets) -match 'AiShield') { throw 'event tracing session left behind' }
         if (Get-Product) { throw 'still listed in Apps' }
         if (Test-Path $Shortcut) { throw 'Start menu shortcut still there' }
         if (Test-Path 'HKLM:\SYSTEM\CurrentControlSet\Services\EventLog\Application\AiShield') { throw 'event log source still registered' }
-        if (Get-ChildItem 'C:\Users\*\AppData\Local\AiShield' -Directory -ErrorAction SilentlyContinue) { throw 'desktop app logs left in a profile' }
     }
 
     Write-Host '== Uninstall'
@@ -234,11 +264,18 @@ try {
         "moved aside to $($aside.Name)"
     }
 
-    Check 'uninstall removes the planted folder too' {
+    Check 'uninstall leaves the planted folder to its owner, untouched' {
         $code = Invoke-Msi @('/x', "`"$NewMsi`"") 'uninstall-after-squat.log'
         if ($code -ne 0) { throw "msiexec exit code $code" }
         Test-NothingLeft
-        'clean'
+        # Deleting it as SYSTEM could follow links planted inside, so it must still be there, still theirs.
+        $aside = Get-ChildItem $env:ProgramData -Directory -Filter 'AiShield.untrusted-*' -Force
+        if (-not $aside) { throw 'the planted folder was deleted' }
+        $owner = (Get-Acl $aside[0].FullName).GetOwner([Security.Principal.SecurityIdentifier]).Value
+        if ($owner -in 'S-1-5-18', 'S-1-5-32-544') { throw "owned by $owner, not the user who planted it" }
+        if (-not (Test-Path (Join-Path $aside[0].FullName 'policy.db'))) { throw 'its contents were changed' }
+        Remove-Item $aside.FullName -Recurse -Force
+        "left in place, owned by $owner"
     }
 } finally {
     Set-Content $Hosts $hostsBackup -NoNewline

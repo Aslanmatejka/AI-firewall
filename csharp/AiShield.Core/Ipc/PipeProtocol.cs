@@ -9,9 +9,34 @@ namespace AiShield.Core.Ipc;
 /// </summary>
 public static class PipeProtocol
 {
-    public const string PipeName = "AiShield.v1";
     public const string ServiceName = "AiShield";
     public const int MaxMessageBytes = 1024 * 1024;
+
+    /// <summary>Unknown programs may only say hello, which needs a few bytes, not a megabyte.</summary>
+    public const int MaxUntrustedMessageBytes = 4 * 1024;
+
+    // The service picks a new random pipe name each time it starts and publishes it here, where only
+    // SYSTEM and administrators can write. Nobody can grab a name before the service knows it.
+    public const string RegistryKey = @"SOFTWARE\AiShield";
+    public const string RegistryValue = "PipeName";
+    private const string PipeNamePrefix = "AiShield.v1.";
+
+    public static string NewPipeName()
+        => PipeNamePrefix + Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(8)).ToLowerInvariant();
+
+    public static bool IsValidPipeName(string? name)
+        => name is { Length: 28 }
+            && name.StartsWith(PipeNamePrefix, StringComparison.Ordinal)
+            && name[PipeNamePrefix.Length..].All(c => c is >= '0' and <= '9' or >= 'a' and <= 'f');
+
+    /// <summary>The running service's pipe name, or null if no service has published one.</summary>
+    public static string? DiscoverPipeName()
+    {
+        using var hive = Microsoft.Win32.RegistryKey.OpenBaseKey(Microsoft.Win32.RegistryHive.LocalMachine, Microsoft.Win32.RegistryView.Registry64);
+        using var key = hive.OpenSubKey(RegistryKey);
+        var name = key?.GetValue(RegistryValue) as string;
+        return IsValidPipeName(name) ? name : null;
+    }
 
     public static JsonSerializerOptions Json { get; } = new(JsonSerializerDefaults.General)
     {
@@ -32,15 +57,18 @@ public static class PipeProtocol
         await stream.FlushAsync(ct).ConfigureAwait(false);
     }
 
-    /// <summary>Returns null if the other side closed the connection before sending anything.</summary>
-    public static async Task<byte[]?> ReadMessageAsync(Stream stream, CancellationToken ct)
+    /// <summary>
+    /// Returns null if the other side closed the connection before sending anything. The declared length
+    /// is checked against <paramref name="maxBytes"/> before any memory is set aside for the message.
+    /// </summary>
+    public static async Task<byte[]?> ReadMessageAsync(Stream stream, CancellationToken ct, int maxBytes = MaxMessageBytes)
     {
         var header = new byte[4];
         if (!await FillAsync(stream, header, ct).ConfigureAwait(false))
             return null;
 
         var length = BinaryPrimitives.ReadInt32LittleEndian(header);
-        if (length is < 0 or > MaxMessageBytes)
+        if (length < 0 || length > Math.Min(maxBytes, MaxMessageBytes))
             throw new InvalidDataException($"Message length {length} is out of range");
 
         var body = new byte[length];

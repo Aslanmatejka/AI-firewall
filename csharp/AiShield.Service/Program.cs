@@ -15,6 +15,9 @@ using AiShield.Service.Native;
 using AiShield.Service.Sessions;
 using Microsoft.Extensions.Logging.EventLog;
 
+// First thing, before anything else loads: close the usual routes for code to get into a SYSTEM process.
+var mitigations = AiShield.Core.Windows.ProcessHardening.Apply(allowChildProcesses: true);
+
 // The installer runs maintenance tasks through the service's own executable, as SYSTEM.
 if (args.Length == 2 && args[0] == "--maintenance")
     return Maintenance.Run(args[1]);
@@ -88,9 +91,18 @@ builder.Services.AddSingleton(sp =>
         sp.GetRequiredService<IProcessStopper>(),
         sp.GetRequiredService<IHelperControl>(),
         sp.GetRequiredService<ILoggerFactory>().CreateLogger("Broker")));
-    tracker.AiAppStarted += app => broker.Emit(
-        ResourceType.Process, PolicyAction.Ask, app.AppName, app.ImagePath,
-        $"AI app detected: {app.AppName} (PID {app.Pid}, by {app.DetectedBy})", EventSeverity.Warning);
+    // One entry per app every 10 minutes, and at most 30 a minute overall, so starting processes in a
+    // loop, even under ever-changing names, can't flood the audit log.
+    var throttle = new EventThrottle(TimeSpan.FromMinutes(10), maxPerMinute: 30);
+    tracker.AiAppStarted += app =>
+    {
+        if (!throttle.ShouldRecord(app.AppName, DateTimeOffset.UtcNow, out var suppressed))
+            return;
+        var more = suppressed > 0 ? $"; {suppressed} more start(s) since the last entry" : "";
+        broker.Emit(
+            ResourceType.Process, PolicyAction.Ask, app.AppName, app.ImagePath,
+            $"AI app detected: {app.AppName} (PID {app.Pid}, by {app.DetectedBy}{more})", EventSeverity.Warning);
+    };
     return broker;
 });
 
@@ -103,6 +115,8 @@ builder.Services.AddHostedService(sp => sp.GetRequiredService<HelperSupervisor>(
 var host = builder.Build();
 var log = host.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Startup");
 log.LogInformation("AI Firewall service {Version} starting from {Root}", ShieldBroker.Version, layout.Root);
+foreach (var mitigation in mitigations.Where(m => !m.Applied))
+    log.LogWarning("Couldn't apply the {Mitigation} mitigation", mitigation.Mitigation);
 if (!layout.InstallProtected)
 {
     log.LogWarning("Running from a folder ordinary users can change ({Problem}). The desktop app won't be trusted "
