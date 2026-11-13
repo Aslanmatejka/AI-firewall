@@ -2,7 +2,8 @@ name: CI
 
 on:
   push:
-    branches: [main, production-hardening, "m*-*"]
+    # Every branch, so work in progress is tested before it reaches a pull request.
+    branches: ["**"]
   pull_request:
 
 permissions:
