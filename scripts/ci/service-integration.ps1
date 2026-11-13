@@ -48,6 +48,18 @@ function Invoke-Client([string]$Op, [hashtable]$Arguments) {
     return ($output | Select-Object -Last 1) | ConvertFrom-Json
 }
 
+# Sends a request that opens the secure prompt. After a refusal the service makes the next prompt wait,
+# longer each time, and answers "busy" until then; that's a defense, so wait it out rather than fail.
+function Invoke-Prompted([string]$Op, [hashtable]$Arguments) {
+    $deadline = (Get-Date).AddSeconds(90)
+    do {
+        $reply = Invoke-Client $Op $Arguments
+        if ($reply.consent -ne 'busy') { return $reply }
+        Start-Sleep -Seconds 2
+    } while ((Get-Date) -lt $deadline)
+    throw "the service stayed busy for 90 s"
+}
+
 function Set-ConsentAnswer([string]$Answer) {
     New-Item -ItemType Directory -Force $TestDir | Out-Null
     Set-Content (Join-Path $TestDir 'consent-decision.txt') $Answer
@@ -156,7 +168,7 @@ Check 'tightening applies without a prompt' {
 
 Check 'weakening needs the secure prompt, and a refusal changes nothing' {
     Set-ConsentAnswer 'deny 3'
-    $reply = Invoke-Client 'set-global-policy' @{ key = 'network_policy'; value = 'allow' }
+    $reply = Invoke-Prompted 'set-global-policy' @{ key = 'network_policy'; value = 'allow' }
     if ($reply.ok -or $reply.consent -ne 'denied') { throw "ok=$($reply.ok) consent=$($reply.consent)" }
     $policy = (Invoke-Client 'config').data.network_policy
     if ($policy -eq 'allow') { throw 'network policy was relaxed anyway' }
@@ -168,12 +180,12 @@ Check 'allowing a request needs the secure prompt' {
     $submitted = Invoke-Client 'test-submit-request' @{ app_name = 'ProbeAI'; resource_type = 'network'; target = 'probe.example' }
     $id = $submitted.data.id
     Set-ConsentAnswer 'deny 3'
-    $refused = Invoke-Client 'review' @{ id = $id }
+    $refused = Invoke-Prompted 'review' @{ id = $id }
     if ($refused.ok) { throw 'allowed without confirmation' }
     if (-not ((Get-Status).pending_requests | Where-Object id -eq $id)) { throw 'request vanished after a refusal' }
     Start-Sleep -Seconds 4
     Set-ConsentAnswer 'allow 3'
-    $allowed = Invoke-Client 'review' @{ id = $id }
+    $allowed = Invoke-Prompted 'review' @{ id = $id }
     if (-not $allowed.ok -or $allowed.consent -ne 'approved') { throw "ok=$($allowed.ok) consent=$($allowed.consent)" }
     if ((Get-Status).pending_requests | Where-Object id -eq $id) { throw 'still pending after approval' }
     "request $id refused, then approved on the prompt"
@@ -211,16 +223,18 @@ Check 'a connection flood from an unknown program doesn''t lock out the desktop 
     $servicePid = (Get-CimInstance Win32_Service -Filter "Name='AiShield'").ProcessId
     $memory = [math]::Round((Get-Process -Id $servicePid).WorkingSet64 / 1MB)
     $flood.WaitForExit(60000) | Out-Null
+    Get-Process AiShield.TamperProbe -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
     if ($memory -gt 400) { throw "service memory reached $memory MB" }
     "answered in $elapsed s during the flood; service at $memory MB; $((Get-Content $out -Raw).Trim())"
 }
 
 Check 'squatting the old fixed pipe name doesn''t stop the service' {
-    $hold = Start-Process $Probe -ArgumentList 'as-basic-user', 'hold-pipe', 'AiShield.v1', '60' -PassThru -NoNewWindow
+    Start-Process $Probe -ArgumentList 'as-basic-user', 'hold-pipe', 'AiShield.v1', '20' -NoNewWindow | Out-Null
     Start-Sleep -Seconds 2
     Restart-Service AiShield
     Wait-Until { try { (Invoke-Client 'hello').ok } catch { $false } } 30 'the restarted service to answer' | Out-Null
-    Stop-Process -Id $hold.Id -Force -ErrorAction SilentlyContinue
+    # The probe's launcher and its limited-token child are both test processes.
+    Get-Process AiShield.TamperProbe -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
     $name = (Get-ItemProperty 'HKLM:\SOFTWARE\AiShield').PipeName
     "serving on $name"
 }
@@ -249,7 +263,8 @@ Check 'uninstall leaves nothing running or installed' {
     if (Get-Service AiShield -ErrorAction SilentlyContinue) { throw 'service still registered' }
     if (Test-Path $Install) { throw 'install folder still there' }
     if (Test-Path $Data) { throw 'data folder still there' }
-    if (Get-Process AiShield.* -ErrorAction SilentlyContinue) { throw 'AI Firewall processes still running' }
+    $running = Get-Process AiShield.* -ErrorAction SilentlyContinue | Where-Object Name -ne 'AiShield.TamperProbe'
+    if ($running) { throw "AI Firewall processes still running: $($running.Name -join ', ')" }
     if ((logman query -ets) -match 'AiShield') { throw 'event tracing session left behind' }
     if (Test-Path 'HKLM:\SOFTWARE\AiShield') { throw 'registry key still there' }
     'clean'
